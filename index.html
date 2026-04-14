@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BIIA">
-<title>BIIA — Assistente de Revisão Bibliográfica</title>
+<title>BIIA</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -237,7 +237,7 @@ tr:hover td { background: var(--card); }
 <div class="overlay" id="overlay">
   <div class="modal">
     <h2>BIIA</h2>
-    <p>Assistente de Revisão Bibliográfica com IA.<br>Cole sua chave Gemini para começar.<br>
+    <p>BIIA — bibliografia + ia.<br>Cole sua chave Gemini para começar.<br>
     Acesse <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> → Get API key.</p>
     <input type="password" id="modal-key" placeholder="AIza..." autocomplete="off">
     <button class="btn-save" onclick="saveKey()">Entrar</button>
@@ -248,7 +248,7 @@ tr:hover td { background: var(--card); }
 <header>
   <div>
     <div class="logo">BIIA</div>
-    <div class="logo-sub">bibliographic ai assistant</div>
+    <div class="logo-sub">bibliografia + ia</div>
   </div>
   <div class="hdr-right">
     <span class="hdr-model" id="hdr-model" style="display:none"></span>
@@ -424,14 +424,15 @@ COL_DEFS.forEach(c => colStates[c.id] = { active: ['architecture','model','compl
 // ── API Key ────────────────────────────────────────────────────────────────
 function loadKey() {
   const k = localStorage.getItem(LS_KEY) || '';
+  // always fix model to current version
+  activeModel = 'gemini-3.1-flash-lite-preview';
+  localStorage.setItem(LS_MOD, activeModel);
+  document.getElementById('hdr-model').textContent = activeModel;
+  document.getElementById('api-model-label').textContent = activeModel;
   if (k.startsWith('AIza') && k.length > 20) {
     document.getElementById('overlay').classList.add('hidden');
     document.getElementById('api-bar').style.display = 'flex';
-    if (activeModel) {
-      document.getElementById('hdr-model').textContent = activeModel;
-      document.getElementById('hdr-model').style.display = 'inline';
-      document.getElementById('api-model-label').textContent = activeModel;
-    }
+    document.getElementById('hdr-model').style.display = 'inline';
   } else {
     document.getElementById('overlay').classList.remove('hidden');
     document.getElementById('api-bar').style.display = 'none';
@@ -799,7 +800,7 @@ function showToast(msg) { const t=document.getElementById('toast'); t.textConten
 
 // ── PWA ────────────────────────────────────────────────────────────────────
 const mBlob = new Blob([JSON.stringify({
-  name:"BIIA — Bibliographic AI Assistant", short_name:"BIIA",
+  name:"BIIA", short_name:"BIIA",
   start_url:".", display:"standalone",
   background_color:"#080d14", theme_color:"#080d14",
   icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23080d14'/%3E%3Ctext x='256' y='300' font-family='sans-serif' font-size='200' font-weight='900' text-anchor='middle' fill='url(%23g)'%3EBIIA%3C/text%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%2300e5ff'/%3E%3Cstop offset='1' stop-color='%237c3aed'/%3E%3C/linearGradient%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]
