@@ -324,7 +324,7 @@ tr:hover td { background: var(--card); }
 const LS_KEY = 'biia_gemini_key';
 const LS_MOD = 'biia_model';
 const BATCH  = 5;
-const GEMINI_MODELS = ['gemini-3-flash-preview','gemini-3.1-flash-lite-preview','gemini-2.5-flash','gemini-2.5-flash-lite','gemini-2.0-flash'];
+const GEMINI_MODELS = ['gemini-3.1-flash-lite-preview'];
 
 // ── Column definitions ─────────────────────────────────────────────────────
 const COL_DEFS = [
@@ -615,7 +615,26 @@ async function classifyBatch(batch, startIdx, activeCols) {
   }
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
   const clean = text.replace(/```json|```/g,'').trim();
-  JSON.parse(clean).forEach(r => {
+
+  let parsed = [];
+  try {
+    parsed = JSON.parse(clean);
+  } catch(e) {
+    // fallback: extract individual objects via regex
+    const matches = clean.match(/\{[^{}]*"index"\s*:\s*\d+[^{}]*\}/g) || [];
+    matches.forEach(m => {
+      try {
+        const safe = m.replace(/[\u0000-\u001F\u007F]/g, ' ');
+        parsed.push(JSON.parse(safe));
+      } catch(_) {}
+    });
+    if (parsed.length === 0) {
+      console.warn('JSON parse failed, skipping batch:', e.message);
+      return;
+    }
+  }
+
+  parsed.forEach(r => {
     const idx = startIdx + r.index;
     if (allRows[idx]) {
       activeCols.forEach(c => { if (r[c.id] !== undefined) allRows[idx][c.id] = r[c.id]; });
