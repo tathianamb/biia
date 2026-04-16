@@ -30,18 +30,20 @@
   --target-other:   #94a3b8; --target-other-bg:  #0a0e14;
 
   --arch-t:    #a78bfa; --arch-t-bg:    #0f0820;
+  --arch-ssm:  #06b6d4; --arch-ssm-bg:  #001820;
   --arch-rnn:  #38bdf8; --arch-rnn-bg:  #03111e;
+  --arch-cnn:  #f472b6; --arch-cnn-bg:  #180510;
   --arch-gnn:  #34d399; --arch-gnn-bg:  #001510;
-  --arch-ens:  #fbbf24; --arch-ens-bg:  #150e00;
-  --arch-hdl:  #f472b6; --arch-hdl-bg:  #180510;
+  --arch-mlp:  #fb923c; --arch-mlp-bg:  #180800;
   --arch-hat:  #f43f5e; --arch-hat-bg:  #180008;
-  --arch-hml:  #fb923c; --arch-hml-bg:  #180800;
-  --arch-hfl:  #4ade80; --arch-hfl-bg:  #001508;
-  --arch-hd:   #22d3ee; --arch-hd-bg:   #000f18;
-  --arch-nf:   #e879f9; --arch-nf-bg:   #150018;
-  --arch-llm:  #818cf8; --arch-llm-bg:  #080820;
+  --arch-dec:  #22d3ee; --arch-dec-bg:  #000f18;
+  --arch-ens:  #fbbf24; --arch-ens-bg:  #150e00;
   --arch-est:  #94a3b8; --arch-est-bg:  #0a0e14;
+  --arch-prob: #818cf8; --arch-prob-bg: #080820;
   --arch-fis:  #a3e635; --arch-fis-bg:  #0c1300;
+  --arch-nf:   #e879f9; --arch-nf-bg:   #150018;
+  --arch-llm:  #c084fc; --arch-llm-bg:  #140020;
+  --arch-fm:   #ff6b6b; --arch-fm-bg:   #200808;
   --arch-out:  #64748b; --arch-out-bg:  #080d14;
 
   --task-prev: #34d399; --task-prev-bg: #001510;
@@ -185,18 +187,20 @@ main { padding: 16px 20px; max-width: 1040px; margin: 0 auto; }
 .p-target-both  { background: var(--target-both-bg);  color: var(--target-both); }
 .p-target-other { background: var(--target-other-bg); color: var(--target-other); }
 .p-arch-t    { background: var(--arch-t-bg);    color: var(--arch-t); }
+.p-arch-ssm  { background: var(--arch-ssm-bg);  color: var(--arch-ssm); }
 .p-arch-rnn  { background: var(--arch-rnn-bg);  color: var(--arch-rnn); }
+.p-arch-cnn  { background: var(--arch-cnn-bg);  color: var(--arch-cnn); }
 .p-arch-gnn  { background: var(--arch-gnn-bg);  color: var(--arch-gnn); }
-.p-arch-ens  { background: var(--arch-ens-bg);  color: var(--arch-ens); }
-.p-arch-hdl  { background: var(--arch-hdl-bg);  color: var(--arch-hdl); }
+.p-arch-mlp  { background: var(--arch-mlp-bg);  color: var(--arch-mlp); }
 .p-arch-hat  { background: var(--arch-hat-bg);  color: var(--arch-hat); }
-.p-arch-hml  { background: var(--arch-hml-bg);  color: var(--arch-hml); }
-.p-arch-hfl  { background: var(--arch-hfl-bg);  color: var(--arch-hfl); }
-.p-arch-hd   { background: var(--arch-hd-bg);   color: var(--arch-hd); }
+.p-arch-dec  { background: var(--arch-dec-bg);  color: var(--arch-dec); }
+.p-arch-ens  { background: var(--arch-ens-bg);  color: var(--arch-ens); }
+.p-arch-est  { background: var(--arch-est-bg);  color: var(--arch-est); }
+.p-arch-prob { background: var(--arch-prob-bg); color: var(--arch-prob); }
+.p-arch-fis  { background: var(--arch-fis-bg);  color: var(--arch-fis); }
 .p-arch-nf   { background: var(--arch-nf-bg);   color: var(--arch-nf); }
 .p-arch-llm  { background: var(--arch-llm-bg);  color: var(--arch-llm); }
-.p-arch-est  { background: var(--arch-est-bg);  color: var(--arch-est); }
-.p-arch-fis  { background: var(--arch-fis-bg);  color: var(--arch-fis); }
+.p-arch-fm   { background: var(--arch-fm-bg);   color: var(--arch-fm); }
 .p-arch-out  { background: var(--arch-out-bg);  color: var(--arch-out); border:1px solid var(--border); }
 .p-task-prev { background: var(--task-prev-bg); color: var(--task-prev); }
 .p-task-otim { background: var(--task-otim-bg); color: var(--task-otim); }
@@ -324,7 +328,7 @@ tr:hover td { background: var(--card); }
 const LS_KEY = 'biia_gemini_key';
 const LS_MOD = 'biia_model';
 const BATCH  = 5;
-const GEMINI_MODELS = ['gemini-3.1-flash-lite-preview'];
+const GEMINI_MODELS = ['gemini-3.1-flash-lite-preview','gemini-2.5-flash','gemini-2.5-flash-lite'];
 
 // ── Column definitions ─────────────────────────────────────────────────────
 const COL_DEFS = [
@@ -355,14 +359,11 @@ O que é previsto/estimado pelo modelo proposto. Use EXATAMENTE uma das opções
 Liste as famílias arquiteturais do modelo PROPOSTO. Podem ser MÚLTIPLAS tags separadas por vírgula.
 Use APENAS as opções abaixo — inclua todas que compõem a arquitetura proposta:
 - "Transformer": backbone baseado em atenção (Transformer, Informer, PatchTST, Mamba, Crossformer, Autoformer)
-- "Rede Neural": LSTM, GRU, BiLSTM, CNN, TCN, MLP, RNN, SNN, ESN e variantes
-- "Graph Neural Network": GNN, GCN, GAT, AGCRN, DCRNN e variantes
-- "Ensemble": Random Forest, XGBoost, LightGBM, AdaBoost, Stacking
-- "Híbrido Deep Learning": combinação de redes neurais SEM atenção explícita e SEM decomposição central
-- "Híbrido Atenção": backbone LSTM/GRU/CNN com atenção ADICIONADA — não é Transformer completo
-- "Híbrido Estatístico-ML": estatístico clássico + ML (Weibull+GBM, ARIMA+LSTM)
-- "Híbrido Físico-ML": modelo físico + ML (PINN+NN, SDE+NN, WRF+DL)
-- "Híbrido Decomposição-ML": decomposição central (EMD, VMD, CEEMDAN, Wavelet) + qualquer preditor
+- "Rede Recorrente": LSTM, GRU, BiLSTM, RNN, Elman, xLSTM
+- "Rede Convolucional": CNN, TCN, ResNet, ConvLSTM, WaveNet
+- "Rede de Grafos": GCN, GAT, AGCRN, DCRNN, STGCN
+- "MLP-based": N-BEATS, N-HiTS, TSMixer, TiDE
+- "Ensemble": XGBoost, Random Forest, LightGBM, CatBoost, Stacking
 - "Neuro-Fuzzy": sistemas fuzzy + redes neurais (ANFIS, FIS+NN)
 - "LLM": Large Language Models para séries temporais (GPT, LLaMA)
 - "Estatístico": puramente estatístico (ARIMA, SARIMA, regressão, Bayesian DLM)
@@ -370,7 +371,7 @@ Use APENAS as opções abaixo — inclua todas que compõem a arquitetura propos
 - "Outro": não classificável (KAN, Diffusion, RL puro, GAM, Quantum NN)
 - "-": sem modelo proposto claro
 REGRAS: Metaheurística e transfer learning NÃO são arquitetura — vão em complementary_technique.
-Exemplo: CNN+BiLSTM+GCN → "Rede Neural, Graph Neural Network"`,
+EXEMPLOS já descritos acima`,
 
   model: `━━ model ━━
 Nome/sigla EXATA do modelo proposto (ex: "DBANN", "CEEMDAN+VMD+GRU", "PINN+Informer").
@@ -402,11 +403,12 @@ const TARGET_CSS = {
   'ambos':'p-target-both','outro':'p-target-other','-':'p-pending'
 };
 const ARCH_CSS = {
-  'Transformer':'p-arch-t','Rede Neural':'p-arch-rnn','Graph Neural Network':'p-arch-gnn',
-  'Ensemble':'p-arch-ens','Híbrido Deep Learning':'p-arch-hdl','Híbrido Atenção':'p-arch-hat',
-  'Híbrido Estatístico-ML':'p-arch-hml','Híbrido Físico-ML':'p-arch-hfl',
-  'Híbrido Decomposição-ML':'p-arch-hd','Neuro-Fuzzy':'p-arch-nf','LLM':'p-arch-llm',
-  'Estatístico':'p-arch-est','Físico':'p-arch-fis','Outro':'p-arch-out','-':'p-pending'
+  'Transformer':'p-arch-t','State Space Model':'p-arch-ssm','Rede Recorrente':'p-arch-rnn',
+  'Rede Convolucional':'p-arch-cnn','Rede de Grafos':'p-arch-gnn','MLP-based':'p-arch-mlp',
+  'Atenção':'p-arch-hat','Decomposição':'p-arch-dec','Ensemble':'p-arch-ens',
+  'Estatístico':'p-arch-est','Probabilístico':'p-arch-prob','Físico':'p-arch-fis',
+  'Neuro-Fuzzy':'p-arch-nf','LLM':'p-arch-llm','Foundation Model':'p-arch-fm',
+  'Outro':'p-arch-out','-':'p-pending'
 };
 const TASK_CSS = {
   'previsão':'p-task-prev','otimização':'p-task-otim','avaliação de recurso':'p-task-rec',
@@ -424,11 +426,11 @@ COL_DEFS.forEach(c => colStates[c.id] = { active: ['architecture','model','compl
 // ── API Key ────────────────────────────────────────────────────────────────
 function loadKey() {
   const k = localStorage.getItem(LS_KEY) || '';
-  // always fix model to current version
-  activeModel = 'gemini-3.1-flash-lite-preview';
-  localStorage.setItem(LS_MOD, activeModel);
-  document.getElementById('hdr-model').textContent = activeModel;
-  document.getElementById('api-model-label').textContent = activeModel;
+  // reset cached model so fallback works properly
+  activeModel = null;
+  localStorage.removeItem(LS_MOD);
+  document.getElementById('hdr-model').textContent = 'auto';
+  document.getElementById('api-model-label').textContent = 'detectando modelo...';
   if (k.startsWith('AIza') && k.length > 20) {
     document.getElementById('overlay').classList.add('hidden');
     document.getElementById('api-bar').style.display = 'flex';
@@ -675,7 +677,7 @@ async function startClassification() {
       document.getElementById('progress-label').textContent = `Classificando… ${done}/${allRows.length}`;
       document.getElementById('btn-download').disabled = false;
       updateStats(); renderTable();
-      if (i + BATCH < allRows.length) await sleep(6000);
+      if (i + BATCH < allRows.length) await sleep(15000);
     }
   } catch(e) { showToast('Erro: ' + e.message); }
 
@@ -710,7 +712,7 @@ function updateTableHeader() {
 // ── Stats ──────────────────────────────────────────────────────────────────
 const STATS_CONFIG = [
   { col:'target', values:['velocidade do vento','potência','ambos','outro','-'], labels:['Velocidade','Potência','Ambos','Outro','-'], css: v => TARGET_CSS[v]||'p-pending' },
-  { col:'architecture', values:Object.keys(ARCH_CSS), labels:['Transformer','Rede Neural','GNN','Ensemble','Híb.DL','Híb.Attn','Híb.Estat','Híb.Fís','Híb.Dec','Neuro-Fz','LLM','Estat','Físico','Outro','-'], css: v => ARCH_CSS[v]||'p-pending' },
+  { col:'architecture', values:Object.keys(ARCH_CSS), labels:['Transformer','SSM','Recorrente','Convolucional','Grafos','MLP','Atenção','Decomposição','Ensemble','Estatístico','Probabilístico','Físico','Neuro-Fuzzy','LLM','Foundation','Outro','-'], css: v => ARCH_CSS[v]||'p-pending' },
   { col:'task', values:Object.keys(TASK_CSS), labels:['Previsão','Otimização','Recurso','Controle','Curva','Anomalias','Ger.Dados','Simulação','Risco','Revisão','Outro'], css: v => TASK_CSS[v]||'p-pending' },
 ];
 
