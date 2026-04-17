@@ -340,9 +340,10 @@ const COL_DEFS = [
 ];
 
 const FILL_MODES = [
-  { value: 'empty',   label: 'Preencher vazios'       },
-  { value: 'all',     label: 'Sobrescrever tudo'       },
+  { value: 'empty',   label: 'Preencher vazios'          },
+  { value: 'all',     label: 'Sobrescrever tudo'          },
   { value: 'unclear', label: 'Sobrescrever "-" e "outro"' },
+  { value: 'legacy',  label: 'Sobrescrever taxonomia antiga' },
 ];
 
 // ── Prompt blocks ──────────────────────────────────────────────────────────
@@ -510,14 +511,19 @@ function parseCSV(text) {
   return rows;
 }
 function parseLine(line) {
-  const r = []; let cur = '', q = false;
-  for (let i = 0; i < line.length; i++) {
-    if (line[i]==='"'&&line[i+1]==='"') { cur+='"'; i++; }
-    else if (line[i]==='"') { q=!q; }
-    else if (line[i]===','&&!q) { r.push(cur); cur=''; }
-    else cur += line[i];
+  const r = []; let cur = '', q = false, i = 0;
+  while (i < line.length) {
+    if (q) {
+      if (line[i]==='"' && line[i+1]==='"') { cur+='"'; i+=2; } // escaped quote
+      else if (line[i]==='"') { q=false; i++; }                 // closing quote
+      else { cur+=line[i]; i++; }
+    } else {
+      if (line[i]==='"') { q=true; i++; }                       // opening quote
+      else if (line[i]===',') { r.push(cur.trim()); cur=''; i++; } // field separator
+      else { cur+=line[i]; i++; }
+    }
   }
-  r.push(cur); return r;
+  r.push(cur.trim()); return r;
 }
 
 document.getElementById('file-input').addEventListener('change', e => {
@@ -558,11 +564,25 @@ dz.addEventListener('drop', e => {
 });
 
 // ── Needs classification check ─────────────────────────────────────────────
+const LEGACY_ARCH = new Set([
+  'Híbrido Decomposição-ML','Híbrido Deep Learning','Híbrido Atenção',
+  'Híbrido Estatístico-ML','Híbrido Físico-ML','Rede Neural',
+  'Graph Neural Network'
+]);
+
 function needsClassification(row, col, mode) {
   const val = (row[col] || '').trim();
   if (mode === 'all') return true;
   if (mode === 'empty') return val === '' || val === null;
   if (mode === 'unclear') return val === '' || val === null || val === '-' || val === 'outro' || val === 'other';
+  if (mode === 'legacy') {
+    if (val === '' || val === null) return true;
+    if (col === 'architecture') {
+      // reprocess if any tag belongs to old taxonomy
+      return val.split(',').map(s=>s.trim()).some(t => LEGACY_ARCH.has(t));
+    }
+    return false;
+  }
   return false;
 }
 
