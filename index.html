@@ -328,7 +328,7 @@ tr:hover td { background: var(--card); }
 const LS_KEY = 'biia_gemini_key';
 const LS_MOD = 'biia_model';
 const BATCH  = 5;
-const GEMINI_MODELS = ['gemini-3.1-flash-lite-preview','gemini-2.5-flash','gemini-2.5-flash-lite'];
+const GEMINI_MODELS = ['gemini-3.1-flash-lite-preview'];
 
 // ── Column definitions ─────────────────────────────────────────────────────
 const COL_DEFS = [
@@ -677,7 +677,7 @@ async function startClassification() {
       document.getElementById('progress-label').textContent = `Classificando… ${done}/${allRows.length}`;
       document.getElementById('btn-download').disabled = false;
       updateStats(); renderTable();
-      if (i + BATCH < allRows.length) await sleep(15000);
+      if (i + BATCH < allRows.length) await sleep(6000);
     }
   } catch(e) { showToast('Erro: ' + e.message); }
 
