@@ -602,7 +602,7 @@ Responda APENAS com JSON válido, sem markdown:
 [{"index":0,${formatEx}}]
 
 Artigos:
-${batch.map((r,j)=>`[${j}] Título: ${r.title}\nAbstract: ${r.abstract||''}`).join('\n\n---\n\n')}`;
+${batch.map((r,j)=>`[${j}] Título: ${r.title}\nAbstract: ${r.abstract||''}\nAuthor Keywords: ${r['Author Keywords']||'-'}\nIndex Keywords: ${r['Index Keywords']||'-'}`).join('\n\n---\n\n')}`;
 }
 
 // ── Gemini ─────────────────────────────────────────────────────────────────
