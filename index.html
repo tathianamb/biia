@@ -624,7 +624,7 @@ Responda APENAS com JSON válido, sem markdown:
 [{"index":0,${formatEx}}]
 
 Artigos:
-${batch.map((r,j)=>`[${j}] Título: ${r.title}\nAbstract: ${r.abstract||''}\nAuthor Keywords: ${r['Author Keywords']||'-'}\nIndex Keywords: ${r['Index Keywords']||'-'}`).join('\n\n---\n\n')}`;
+${batch.map((r,j)=>`[${j}] Título: ${r.Title||r.title||''}\nAbstract: ${r.Abstract||r.abstract||''}\nAuthor Keywords: ${r['Author Keywords']||'-'}\nIndex Keywords: ${r['Index Keywords']||'-'}`).join('\n\n---\n\n')}`;
 }
 
 // ── Gemini ─────────────────────────────────────────────────────────────────
@@ -813,7 +813,7 @@ function renderTable() {
         matchF = r[activeFilter.col] === activeFilter.val;
       }
     }
-    const matchQ = !q || (r.title||'').toLowerCase().includes(q);
+    const matchQ = !q || (r.Title||r.title||'').toLowerCase().includes(q);
     return matchF && matchQ;
   });
   document.getElementById('visible-count').textContent = `${visible.length}/${allRows.length}`;
@@ -829,7 +829,7 @@ function renderTable() {
       if (c.id === 'task')   return `<td><span class="badge ${TASK_CSS[val]||'p-task-out'}">${esc(val||'…')}</span></td>`;
       return `<td class="mono-cell" title="${esc(val)}">${esc(val||'…')}</td>`;
     }).join('');
-    return `<tr><td class="idx">${r._i+1}</td><td class="title-cell" title="${esc(r.title)}">${esc(r.title)}</td>${colCells}</tr>`;
+    return `<tr><td class="idx">${r._i+1}</td><td class="title-cell" title="${esc(r.Title||r.title||'')}">${esc(r.Title||r.title||'')}</td>${colCells}</tr>`;
   }).join('');
   const footer = document.getElementById('table-footer');
   if (visible.length > MAX) { footer.style.display='block'; footer.textContent=`mostrando ${MAX} de ${visible.length}`; }
