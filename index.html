@@ -279,9 +279,15 @@ tr:hover td { background: var(--card); }
   <div class="section" id="col-section" style="display:none">
     <div class="section-title">Colunas a classificar</div>
     <div class="col-grid" id="col-grid"></div>
-    <button class="toggle-preview" onclick="togglePreview()">▶ ver prompt</button>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="toggle-preview" onclick="togglePreview()">▶ ver prompt</button>
+      <button class="toggle-preview" style="color:var(--success)" onclick="showPayloadPreview()">▶ ver exemplo real</button>
+    </div>
     <div class="prompt-preview" id="prompt-preview">
       <div class="prompt-box" id="prompt-box"></div>
+    </div>
+    <div class="prompt-preview" id="payload-preview">
+      <div class="prompt-box" id="payload-box"></div>
     </div>
   </div>
 
@@ -477,14 +483,30 @@ function toggleColItem(id) {
 }
 
 // ── Prompt preview ─────────────────────────────────────────────────────────
-let previewOpen = false;
+let previewOpen = false, payloadOpen = false;
 function togglePreview() {
   previewOpen = !previewOpen;
-  const el = document.getElementById('prompt-preview');
-  const btn = document.querySelector('.toggle-preview');
-  el.classList.toggle('show', previewOpen);
-  btn.textContent = previewOpen ? '▼ ocultar prompt' : '▶ ver prompt';
+  document.getElementById('prompt-preview').classList.toggle('show', previewOpen);
   if (previewOpen) updatePromptPreview();
+}
+
+function showPayloadPreview() {
+  payloadOpen = !payloadOpen;
+  const el = document.getElementById('payload-preview');
+  el.classList.toggle('show', payloadOpen);
+  if (!payloadOpen) return;
+  if (!allRows.length) {
+    document.getElementById('payload-box').textContent = 'Carregue um CSV primeiro.';
+    return;
+  }
+  const activeCols = COL_DEFS.filter(c => colStates[c.id].active);
+  if (!activeCols.length) {
+    document.getElementById('payload-box').textContent = 'Selecione pelo menos uma coluna.';
+    return;
+  }
+  const sample = [allRows[0]];
+  const prompt = buildPrompt(sample, activeCols);
+  document.getElementById('payload-box').textContent = prompt;
 }
 
 function updatePromptPreview() {
@@ -687,9 +709,29 @@ async function startClassification() {
   try {
     for (let i = start; i < allRows.length; i += BATCH) {
       if (stopFlag) break;
-      // filter batch to only rows that need work
       const batch = allRows.slice(i, i + BATCH);
-      await classifyBatch(batch, i, activeCols);
+
+      // retry with backoff
+      let attempts = 0;
+      while (true) {
+        if (stopFlag) break;
+        try {
+          await classifyBatch(batch, i, activeCols);
+          attempts = 0;
+          break;
+        } catch(e) {
+          attempts++;
+          const waitMin = attempts <= 3 ? 2 : 5;
+          for (let t = waitMin * 60; t > 0; t--) {
+            if (stopFlag) break;
+            document.getElementById('progress-label').textContent =
+              `⚠️ Erro (tentativa ${attempts}) — retentando em ${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`;
+            await sleep(1000);
+          }
+        }
+      }
+
+      if (stopFlag) break;
       const done = allRows.filter((_, idx) => !rowNeedsWork(idx)).length;
       const pct = Math.round(done / allRows.length * 100);
       document.getElementById('progress-fill').style.width = pct + '%';
@@ -699,7 +741,7 @@ async function startClassification() {
       updateStats(); renderTable();
       if (i + BATCH < allRows.length) await sleep(6000);
     }
-  } catch(e) { showToast('Erro: ' + e.message); }
+  } catch(e) { showToast('Erro inesperado: ' + e.message); }
 
   document.getElementById('btn-pause').style.display = 'none';
   document.getElementById('btn-start').style.display = 'inline-block';
