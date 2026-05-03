@@ -359,8 +359,7 @@ O que é previsto/estimado pelo modelo proposto. Use EXATAMENTE uma das opções
 - "velocidade do vento": previsão de wind speed
 - "potência": previsão de wind power
 - "ambos": prevê tanto velocidade quanto potência
-- "outro": outra variável ou não é modelo de previsão
-- "-": não aplicável (revisões, otimização pura, etc.)`,
+- "outro": outra variável, não é modelo de previsão, ou não aplicável (revisões, otimização pura, etc.)`,
 
   architecture: `━━ architecture ━━
 Liste as famílias arquiteturais do modelo PROPOSTO. Podem ser MÚLTIPLAS tags separadas por vírgula.
@@ -407,7 +406,7 @@ Tarefa principal do artigo. Use EXATAMENTE uma das opções:
 // ── Color maps ─────────────────────────────────────────────────────────────
 const TARGET_CSS = {
   'velocidade do vento':'p-target-speed','potência':'p-target-power',
-  'ambos':'p-target-both','outro':'p-target-other','-':'p-pending'
+  'ambos':'p-target-both','outro':'p-target-other'
 };
 const ARCH_CSS = {
   'Transformer':'p-arch-t','State Space Model':'p-arch-ssm','Rede Recorrente':'p-arch-rnn',
@@ -773,7 +772,7 @@ function updateTableHeader() {
 
 // ── Stats ──────────────────────────────────────────────────────────────────
 const STATS_CONFIG = [
-  { col:'target', values:['velocidade do vento','potência','ambos','outro','-'], labels:['Velocidade','Potência','Ambos','Outro','-'], css: v => TARGET_CSS[v]||'p-pending' },
+  { col:'target', values:['velocidade do vento','potência','ambos','outro'], labels:['Velocidade','Potência','Ambos','Outro'], css: v => TARGET_CSS[v]||'p-pending' },
   { col:'architecture', values:Object.keys(ARCH_CSS), labels:['Transformer','SSM','Recorrente','Convolucional','Grafos','MLP','Atenção','Decomposição','Ensemble','Estatístico','Probabilístico','Físico','Neuro-Fuzzy','LLM','Foundation','Outro','-'], css: v => ARCH_CSS[v]||'p-pending' },
   { col:'task', values:Object.keys(TASK_CSS), labels:['Previsão','Otimização','Recurso','Controle','Curva','Anomalias','Ger.Dados','Simulação','Risco','Revisão','Outro'], css: v => TASK_CSS[v]||'p-pending' },
 ];
