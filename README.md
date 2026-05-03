@@ -28,11 +28,20 @@ BIIA was developed as part of a systematic literature review on **wind energy fo
 
 | Column | Type | Description |
 |--------|------|-------------|
-| `target` | closed list | What the model predicts: wind speed, power, both, or other |
+| `target` | closed list | What the model predicts: wind speed, power (any source), both, or other |
 | `architecture` | multiple atomic tags | Architectural components of the proposed model |
 | `model` | free text | Exact name or acronym of the proposed model |
 | `complementary_technique` | free text | Optimization, training paradigm, or methodological strategy |
 | `task` | closed list | Primary research task of the paper |
+
+### Target values
+
+| Value | Description |
+|-------|-------------|
+| `velocidade do vento` | Forecasting of wind speed |
+| `potência` | Forecasting of power output from any source (wind, solar, etc.) |
+| `ambos` | Simultaneously forecasts wind speed and another target variable |
+| `outro` | Any other variable, non-forecasting paper, or not applicable (reviews, optimization, etc.) |
 
 ---
 
@@ -141,10 +150,9 @@ Each selected column can be configured independently:
 
 | Mode | Behavior |
 |------|----------|
-| Preencher vazios | Skips rows that already have a value — useful for resuming sessions |
-| Sobrescrever tudo | Reprocesses every row — useful after refining the taxonomy |
-| Sobrescrever "-" e "outro" | Reprocesses only ambiguous or unclassified rows |
-| Sobrescrever taxonomia antiga | Reprocesses rows classified under a previous taxonomy version |
+| Preencher vazios | Skips rows that already have a value — useful for resuming interrupted sessions |
+| Sobrescrever tudo | Reprocesses every row — useful after refining the taxonomy or the prompt |
+| Sobrescrever outro | Reprocesses only rows classified as `outro` — useful for reviewing ambiguous cases |
 
 ---
 
