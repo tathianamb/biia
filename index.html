@@ -354,11 +354,14 @@ const FILL_MODES = [
 // ── Prompt blocks ──────────────────────────────────────────────────────────
 const PROMPT_BLOCKS = {
   target: `━━ target ━━
-O que é previsto/estimado pelo modelo proposto. Use EXATAMENTE uma das opções:
-- "velocidade do vento": previsão de wind speed
-- "potência": previsão de potência de qualquer fonte (eólica, solar, etc.)
-- "ambos": prevê velocidade do vento E outro target simultaneamente
-- "outro": outra variável, não é modelo de previsão, ou não aplicável (revisões, otimização pura, etc.)`,
+O que é previsto pelo modelo proposto. Siga a HIERARQUIA abaixo em ordem:
+
+1. "velocidade do vento": o artigo propõe um NOVO modelo cuja saída principal é velocidade do vento — mesmo que também calcule potência a partir dela.
+   ATENÇÃO: velocidade do vento como INPUT não conta. Apenas quando é o OUTPUT de um novo modelo proposto pelo artigo.
+
+2. "potência": o modelo prevê potência de qualquer fonte (eólica, solar, etc.) e NÃO se enquadra na regra anterior.
+
+3. "outro": não prevê velocidade do vento nem potência, não é modelo de previsão, ou não aplicável (revisões, otimização pura, etc.)`,
 
   architecture: `━━ architecture ━━
 Liste as famílias arquiteturais do modelo PROPOSTO. Podem ser MÚLTIPLAS tags separadas por vírgula.
@@ -405,7 +408,7 @@ Tarefa principal do artigo. Use EXATAMENTE uma das opções:
 // ── Color maps ─────────────────────────────────────────────────────────────
 const TARGET_CSS = {
   'velocidade do vento':'p-target-speed','potência':'p-target-power',
-  'ambos':'p-target-both','outro':'p-target-other'
+  'outro':'p-target-other'
 };
 const ARCH_CSS = {
   'Transformer':'p-arch-t','State Space Model':'p-arch-ssm','Rede Recorrente':'p-arch-rnn',
@@ -757,7 +760,7 @@ function updateTableHeader() {
 
 // ── Stats ──────────────────────────────────────────────────────────────────
 const STATS_CONFIG = [
-  { col:'target', values:['velocidade do vento','potência','ambos','outro'], labels:['Velocidade','Potência','Ambos','Outro'], css: v => TARGET_CSS[v]||'p-pending' },
+  { col:'target', values:['velocidade do vento','potência','outro'], labels:['Velocidade','Potência','Outro'], css: v => TARGET_CSS[v]||'p-pending' },
   { col:'architecture', values:Object.keys(ARCH_CSS), labels:['Transformer','SSM','Recorrente','Convolucional','Grafos','MLP','Atenção','Decomposição','Ensemble','Estatístico','Probabilístico','Físico','Neuro-Fuzzy','LLM','Foundation','Outro','-'], css: v => ARCH_CSS[v]||'p-pending' },
   { col:'task', values:Object.keys(TASK_CSS), labels:['Previsão','Otimização','Recurso','Controle','Curva','Anomalias','Ger.Dados','Simulação','Risco','Revisão','Outro'], css: v => TASK_CSS[v]||'p-pending' },
 ];
