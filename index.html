@@ -592,6 +592,112 @@ function needsClassification(row, col, mode) {
   return false;
 }
 
+// ── Regex classification ───────────────────────────────────────────────────
+const TASK_RULES = [
+  { task: 'revisão',               patterns: [/systematic review/i, /literature survey/i] },
+  { task: 'simulação física',      patterns: [/\bCFD\b/, /\bLES\b/, /\bWRF\b/] },
+  { task: 'detecção de anomalias', patterns: [/anomaly detection/i, /fault detection/i, /fault diagnosis/i] },
+  { task: 'geração de dados',      patterns: [/data augmentation/i, /synthetic data/i] },
+  { task: 'avaliação de risco',    patterns: [/risk assessment/i] },
+  { task: 'controle',              patterns: [/wake control/i, /pitch control/i, /frequency control/i] },
+  { task: 'modelagem de curva',    patterns: [/power curve/i] },
+  { task: 'avaliação de recurso',  patterns: [/resource assessment/i, /wind potential/i] },
+  { task: 'otimização',            patterns: [/\bscheduling\b/i, /\bdispatch\b/i, /\barbitrage\b/i, /unit commitment/i] },
+];
+const TASK_FORECAST_PATTERNS = [/forecasting/i, /prediction/i];
+
+const TARGET_RULES = [
+  { target: 'velocidade do vento', patterns: [/wind speed/i] },
+  { target: 'potência',            patterns: [/wind power/i] },
+];
+
+function getSearchText(row, titleOnly = false) {
+  const title = row.Title || row.title || '';
+  if (titleOnly) return title;
+  const kw1 = row['Author Keywords'] || '';
+  const kw2 = row['Index Keywords'] || '';
+  return `${title} ${kw1} ${kw2}`;
+}
+
+function applyRegex(row) {
+  const text      = getSearchText(row);
+  const titleText = getSearchText(row, true);
+  const result    = {};
+
+  // task
+  let taskMatch = null;
+  for (const rule of TASK_RULES) {
+    if (rule.patterns.some(p => p.test(text))) { taskMatch = rule.task; break; }
+  }
+  if (!taskMatch && TASK_FORECAST_PATTERNS.some(p => p.test(titleText))) {
+    taskMatch = 'previsão';
+  }
+  result.task = taskMatch || 'outro';
+
+  // target
+  let targetMatch = null;
+  for (const rule of TARGET_RULES) {
+    if (rule.patterns.some(p => p.test(text))) { targetMatch = rule.target; break; }
+  }
+  result.target = targetMatch || 'outro';
+
+  return result;
+}
+
+// ── Regex classification ───────────────────────────────────────────────────
+const TASK_RULES = [
+  { task: 'revisão',              patterns: [/systematic review/i, /literature survey/i] },
+  { task: 'simulação física',     patterns: [/\bCFD\b/, /\bLES\b/, /\bWRF\b/] },
+  { task: 'detecção de anomalias',patterns: [/anomaly detection/i, /fault detection/i, /fault diagnosis/i] },
+  { task: 'geração de dados',     patterns: [/data augmentation/i, /synthetic data/i] },
+  { task: 'avaliação de risco',   patterns: [/risk assessment/i] },
+  { task: 'controle',             patterns: [/wake control/i, /pitch control/i, /frequency control/i] },
+  { task: 'modelagem de curva',   patterns: [/power curve/i] },
+  { task: 'avaliação de recurso', patterns: [/resource assessment/i, /wind potential/i] },
+  { task: 'otimização',           patterns: [/\bscheduling\b/i, /\bdispatch\b/i, /\barbitrage\b/i, /unit commitment/i] },
+];
+const TASK_FORECAST_PATTERNS = [/forecasting/i, /prediction/i];
+
+const TARGET_RULES = [
+  { target: 'velocidade do vento', patterns: [/wind speed/i] },
+  { target: 'potência',            patterns: [/wind power/i] },
+];
+
+function getSearchText(row, titleOnly = false) {
+  const title = row.Title || row.title || '';
+  if (titleOnly) return title;
+  const kw1 = row['Author Keywords'] || '';
+  const kw2 = row['Index Keywords'] || '';
+  return `${title} ${kw1} ${kw2}`;
+}
+
+function applyRegex(row) {
+  const text = getSearchText(row);         // title + keywords
+  const titleText = getSearchText(row, true); // title only
+
+  const result = {};
+
+  // ── task ──
+  let taskMatch = null;
+  for (const rule of TASK_RULES) {
+    if (rule.patterns.some(p => p.test(text))) { taskMatch = rule.task; break; }
+  }
+  // previsão: title only, only if no other match
+  if (!taskMatch && TASK_FORECAST_PATTERNS.some(p => p.test(titleText))) {
+    taskMatch = 'previsão';
+  }
+  result.task = taskMatch || 'outro';
+
+  // ── target ──
+  let targetMatch = null;
+  for (const rule of TARGET_RULES) {
+    if (rule.patterns.some(p => p.test(text))) { targetMatch = rule.target; break; }
+  }
+  result.target = targetMatch || 'outro';
+
+  return result;
+}
+
 // ── Prompt builder ─────────────────────────────────────────────────────────
 function buildPrompt(batch, activeCols) {
   const blocks = activeCols.map(c => PROMPT_BLOCKS[c.id]).join('\n\n');
@@ -672,6 +778,26 @@ async function classifyBatch(batch, startIdx, activeCols) {
 }
 
 // ── Classification ─────────────────────────────────────────────────────────
+async function runWithBackoff(fn, labelPrefix) {
+  let attempts = 0;
+  while (true) {
+    if (stopFlag) break;
+    try {
+      await fn();
+      return;
+    } catch(e) {
+      attempts++;
+      const waitMin = attempts <= 3 ? 2 : 5;
+      for (let t = waitMin * 60; t > 0; t--) {
+        if (stopFlag) break;
+        document.getElementById('progress-label').textContent =
+          `⚠️ ${labelPrefix} (tentativa ${attempts}) — retentando em ${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`;
+        await sleep(1000);
+      }
+    }
+  }
+}
+
 async function startClassification() {
   const key = localStorage.getItem(LS_KEY) || '';
   if (!key.startsWith('AIza')) { showToast('Configure sua chave Gemini primeiro.'); return; }
@@ -685,51 +811,82 @@ async function startClassification() {
   document.getElementById('btn-pause').style.display = 'inline-block';
   document.getElementById('progress-wrap').classList.add('show');
 
-  // find first row that needs classification in any active col
   const rowNeedsWork = i => activeCols.some(c => needsClassification(allRows[i], c.id, colStates[c.id].mode));
-  let start = allRows.findIndex((_, i) => rowNeedsWork(i));
-  if (start === -1) { showToast('Nenhuma linha precisa ser classificada com os modos selecionados.'); return; }
 
-  try {
-    for (let i = start; i < allRows.length; i += BATCH) {
-      if (stopFlag) break;
-      const batch = allRows.slice(i, i + BATCH);
-
-      // retry with backoff
-      let attempts = 0;
-      while (true) {
-        if (stopFlag) break;
-        try {
-          await classifyBatch(batch, i, activeCols);
-          attempts = 0;
-          break;
-        } catch(e) {
-          attempts++;
-          const waitMin = attempts <= 3 ? 2 : 5;
-          for (let t = waitMin * 60; t > 0; t--) {
-            if (stopFlag) break;
-            document.getElementById('progress-label').textContent =
-              `⚠️ Erro (tentativa ${attempts}) — retentando em ${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`;
-            await sleep(1000);
-          }
+  // ── Fase 1: regex for task and target ─────────────────────────────────
+  const regexCols = ['task','target'].filter(id => activeCols.some(c => c.id === id));
+  if (regexCols.length) {
+    document.getElementById('progress-label').textContent = '⚡ Fase 1 — classificando por regex…';
+    allRows.forEach((row, i) => {
+      const regexResult = applyRegex(row);
+      regexCols.forEach(id => {
+        if (needsClassification(row, id, colStates[id]?.mode || 'empty')) {
+          allRows[i][id] = regexResult[id];
         }
-      }
+      });
+    });
+    updateStats(); renderTable();
+  }
 
+  // ── Separate remaining cols for API ───────────────────────────────────
+  // Phase 2: task/target where regex returned 'outro'
+  const apiSimpleCols = activeCols.filter(c => ['task','target'].includes(c.id));
+  // Phase 3: architecture, model, complementary_technique
+  const apiArchCols   = activeCols.filter(c => ['architecture','model','complementary_technique'].includes(c.id));
+
+  const rowNeedsSimple = i => apiSimpleCols.some(c => allRows[i][c.id] === 'outro' || needsClassification(allRows[i], c.id, colStates[c.id].mode));
+  const rowNeedsArch   = i => apiArchCols.some(c => needsClassification(allRows[i], c.id, colStates[c.id].mode));
+
+  let done2 = 0, done3 = 0;
+  const total2 = allRows.filter((_,i) => apiSimpleCols.length && rowNeedsSimple(i)).length;
+  const total3 = allRows.filter((_,i) => apiArchCols.length && rowNeedsArch(i)).length;
+
+  function updateProgress() {
+    const done = allRows.filter((_,i) => !rowNeedsWork(i)).length;
+    const pct  = Math.round(done / allRows.length * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-pct').textContent = pct + '%';
+    document.getElementById('progress-label').textContent =
+      `Classificando… ${done}/${allRows.length} | Fase 2: ${done2}/${total2} | Fase 3: ${done3}/${total3}`;
+    document.getElementById('btn-download').disabled = false;
+    updateStats(); renderTable();
+  }
+
+  // ── Phase 2 loop ──────────────────────────────────────────────────────
+  async function phase2() {
+    if (!apiSimpleCols.length) return;
+    for (let i = 0; i < allRows.length; i += BATCH) {
       if (stopFlag) break;
-      const done = allRows.filter((_, idx) => !rowNeedsWork(idx)).length;
-      const pct = Math.round(done / allRows.length * 100);
-      document.getElementById('progress-fill').style.width = pct + '%';
-      document.getElementById('progress-pct').textContent = pct + '%';
-      document.getElementById('progress-label').textContent = `Classificando… ${done}/${allRows.length}`;
-      document.getElementById('btn-download').disabled = false;
-      updateStats(); renderTable();
+      if (!allRows.slice(i, i+BATCH).some((_,j) => rowNeedsSimple(i+j))) continue;
+      const batch = allRows.slice(i, i + BATCH);
+      await runWithBackoff(() => classifyBatch(batch, i, apiSimpleCols), 'Fase 2');
+      done2 += batch.filter((_,j) => !rowNeedsSimple(i+j)).length;
+      updateProgress();
       if (i + BATCH < allRows.length) await sleep(6000);
     }
+  }
+
+  // ── Phase 3 loop ──────────────────────────────────────────────────────
+  async function phase3() {
+    if (!apiArchCols.length) return;
+    for (let i = 0; i < allRows.length; i += BATCH) {
+      if (stopFlag) break;
+      if (!allRows.slice(i, i+BATCH).some((_,j) => rowNeedsArch(i+j))) continue;
+      const batch = allRows.slice(i, i + BATCH);
+      await runWithBackoff(() => classifyBatch(batch, i, apiArchCols), 'Fase 3');
+      done3 += batch.filter((_,j) => !rowNeedsArch(i+j)).length;
+      updateProgress();
+      if (i + BATCH < allRows.length) await sleep(6000);
+    }
+  }
+
+  try {
+    await Promise.all([phase2(), phase3()]);
   } catch(e) { showToast('Erro inesperado: ' + e.message); }
 
   document.getElementById('btn-pause').style.display = 'none';
   document.getElementById('btn-start').style.display = 'inline-block';
-  const allDone = allRows.every((_, i) => !rowNeedsWork(i));
+  const allDone = allRows.every((_,i) => !rowNeedsWork(i));
   if (allDone) {
     document.getElementById('btn-start').textContent = '✓ Concluído';
     document.getElementById('btn-start').disabled = true;
