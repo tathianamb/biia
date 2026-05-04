@@ -605,15 +605,27 @@ function showPayloadPreview() {
   if (!payloadOpen) return;
   refreshPayloadPreview();
 }
+
+function getSystemPromptBase(activeCols) {
+  const blocks = activeCols.map(c => PROMPT_BLOCKS[c.id]).join('\n\n');
+  
+  return `Você é um especialista em ML aplicado a previsão de energia eólica.
+Analise o título e o abstract COMPLETO de cada artigo e classifique os campos abaixo:
+
+${blocks}`;
+}
+
 function updatePromptPreview() {
   const activeCols = COL_DEFS.filter(c => colStates[c.id].active);
   if (!activeCols.length) {
     document.getElementById('prompt-box').textContent = 'Nenhuma coluna selecionada.';
     return;
   }
-  const blocks = activeCols.map(c => PROMPT_BLOCKS[c.id]).join('\n\n');
+
+  const systemBase = getSystemPromptBase(activeCols);
   const formatEx = activeCols.map(c => `"${c.id}":"..."`).join(', ');
-  const preview = `[Sistema]\nVocê é um especialista em ML aplicado a previsão de energia eólica.\nAnalise título e abstract COMPLETO de cada artigo.\n\n${blocks}\n\n[Formato JSON]\n[{"index":0,${formatEx}}, ...]`;
+
+  const preview = `${systemBase}\n\n[Formato JSON]\n[{"index":0,${formatEx}}, ...]`;
   document.getElementById('prompt-box').textContent = preview;
 }
 
@@ -738,21 +750,24 @@ function applyRegex(row) {
 // ── Regex classification ───────────────────────────────────────────────────
 // ── Prompt builder ─────────────────────────────────────────────────────────
 function buildPrompt(batch, activeCols) {
-  const blocks = activeCols.map(c => PROMPT_BLOCKS[c.id]).join('\n\n');
+  const systemBase = getSystemPromptBase(activeCols);
+  
   const formatEx = activeCols.map(c => {
     const ex = { target:'"potência"', architecture:'"Rede Neural, GNN"', model:'"CEEMDAN+GRU"', complementary_technique:'"PSO"', task:'"previsão"' };
-    return `"${c.id}":${ex[c.id]||'"-"'}`;
+    return `"${c.id}":${ex[c.id] || '"-"'}`;
   }).join(',');
-  return `Você é um especialista em aprendizado de máquina e análise de literatura científica.
-Analise o título e o abstract COMPLETO de cada artigo e classifique os campos abaixo.
 
-${blocks}
+  const articles = batch.map((r, j) => 
+    `[${j}] Título: ${r.Title || r.title || ''}\nAbstract: ${r.Abstract || r.abstract || ''}\nAuthor Keywords: ${r['Author Keywords'] || '-'}\nIndex Keywords: ${r['Index Keywords'] || '-'}`
+  ).join('\n\n---\n\n');
+
+  return `${systemBase}
 
 Responda APENAS com JSON válido, sem markdown:
 [{"index":0,${formatEx}}]
 
 Artigos:
-${batch.map((r,j)=>`[${j}] Título: ${r.Title||r.title||''}\nAbstract: ${r.Abstract||r.abstract||''}\nAuthor Keywords: ${r['Author Keywords']||'-'}\nIndex Keywords: ${r['Index Keywords']||'-'}`).join('\n\n---\n\n')}`;
+${articles}`;
 }
 
 // ── Gemini ─────────────────────────────────────────────────────────────────
