@@ -490,7 +490,7 @@ function toggleColItem(id) {
   const el = document.getElementById(`ci-${id}`);
   el.classList.toggle('active', colStates[id].active);
   updatePromptPreview();
-  if (payloadOpen) showPayloadPreview();
+  if (payloadOpen) refreshPayloadPreview();
   if (allRows.length) { updateStats(); renderTable(); updateTableHeader(); }
 }
 
@@ -502,11 +502,7 @@ function togglePreview() {
   if (previewOpen) updatePromptPreview();
 }
 
-function showPayloadPreview() {
-  payloadOpen = !payloadOpen;
-  const el = document.getElementById('payload-preview');
-  el.classList.toggle('show', payloadOpen);
-  if (!payloadOpen) return;
+function refreshPayloadPreview() {
   if (!allRows.length) {
     document.getElementById('payload-box').textContent = 'Carregue um CSV primeiro.';
     return;
@@ -516,69 +512,47 @@ function showPayloadPreview() {
     document.getElementById('payload-box').textContent = 'Selecione pelo menos uma coluna.';
     return;
   }
-
   const sample = [allRows[0]];
   const phase2Cols = activeCols.filter(c => ['task','target'].includes(c.id));
   const phase3Cols = activeCols.filter(c => ['architecture','model','complementary_technique'].includes(c.id));
   const hasRegex   = phase2Cols.length > 0;
-
   let output = '';
-
-  // Fase 1
   if (hasRegex) {
-    output += `⚡ FASE 1 — Regex (sem API)
-`;
-    output += `Campos: ${phase2Cols.map(c=>c.id).join(', ')} · instantâneo
-`;
-    output += `Texto buscado (título + keywords do artigo 0):
-`;
+    output += `⚡ FASE 1 — Regex (sem API)\n`;
+    output += `Campos: ${phase2Cols.map(c=>c.id).join(', ')} · instantâneo\n`;
+    output += `Texto buscado (título + keywords do artigo 0):\n`;
     const r = allRows[0];
     const title = r.Title||r.title||'';
     const kw1   = r['Author Keywords']||'-';
     const kw2   = r['Index Keywords']||'-';
-    output += `  Título: ${title}
-`;
-    output += `  Author Keywords: ${kw1}
-`;
-    output += `  Index Keywords: ${kw2}
-`;
-    output += `
-${'─'.repeat(60)}
-
-`;
+    output += `  Título: ${title}\n`;
+    output += `  Author Keywords: ${kw1}\n`;
+    output += `  Index Keywords: ${kw2}\n`;
+    output += `\n${'─'.repeat(60)}\n\n`;
   }
-
-  // Fase 2
   if (phase2Cols.length) {
-    output += `🤖 FASE 2 — API · ${phase2Cols.map(c=>c.id).join(', ')}
-`;
-    output += `Lotes de 5 artigos · 6s entre lotes
-`;
-    output += `Apenas artigos onde regex → "outro"
-
-`;
+    output += `🤖 FASE 2 — API · ${phase2Cols.map(c=>c.id).join(', ')}\n`;
+    output += `Lotes de 5 artigos · 6s entre lotes\n`;
+    output += `Apenas artigos onde regex → "outro"\n\n`;
     output += buildPrompt(sample, phase2Cols);
-    output += `
-
-${'─'.repeat(60)}
-
-`;
+    output += `\n\n${'─'.repeat(60)}\n\n`;
   }
-
-  // Fase 3
   if (phase3Cols.length) {
-    output += `🤖 FASE 3 — API · ${phase3Cols.map(c=>c.id).join(', ')}
-`;
-    output += `Lotes de 5 artigos · 6s entre lotes · paralelo com Fase 2
-
-`;
+    output += `🤖 FASE 3 — API · ${phase3Cols.map(c=>c.id).join(', ')}\n`;
+    output += `Lotes de 5 artigos · 6s entre lotes · paralelo com Fase 2\n\n`;
     output += buildPrompt(sample, phase3Cols);
   }
-
   if (!output) output = 'Nenhuma coluna selecionada requer payload.';
   document.getElementById('payload-box').textContent = output;
 }
 
+function showPayloadPreview() {
+  payloadOpen = !payloadOpen;
+  const el = document.getElementById('payload-preview');
+  el.classList.toggle('show', payloadOpen);
+  if (!payloadOpen) return;
+  refreshPayloadPreview();
+}
 function updatePromptPreview() {
   const activeCols = COL_DEFS.filter(c => colStates[c.id].active);
   if (!activeCols.length) {
