@@ -168,15 +168,6 @@ main { padding: 16px 20px; max-width: 1040px; margin: 0 auto; }
 .phase-fill-2 { background: var(--task-prev); }
 .phase-fill-3 { background: var(--target-speed); }
 .phase-fill-4 { background: var(--accent2); }
-.phase-rows { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
-.phase-row { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
-.phase-row .phase-label { width: 140px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.phase-row .phase-bar { flex: 1; height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
-.phase-row .phase-fill { height: 100%; border-radius: 99px; transition: width .4s; }
-.phase-row .phase-status { width: 120px; flex-shrink: 0; text-align: right; white-space: nowrap; }
-.phase-fill-2 { background: var(--task-prev); }
-.phase-fill-3 { background: var(--target-speed); }
-.phase-fill-4 { background: var(--accent2); }
 
 /* ── Controls ── */
 .controls { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
@@ -930,7 +921,6 @@ async function startClassification() {
   const rowNeedsArch   = i => archCols.some(c    => needsClassification(allRows[i], c.id, colStates[c.id].mode));
 
   let done2 = 0, done3 = 0, done4 = 0;
-  // totals calculated after Phase 1 (regex) runs, so they reflect only what needs API
   let total2 = 0, total3 = 0, total4 = 0;
 
   function updateProgress() {
@@ -988,7 +978,7 @@ async function startClassification() {
     }
   }
 
-  // recalculate totals now that regex has run
+  // recalculate totals after Phase 1 (regex) has run
   total2 = allRows.filter((_,i) => taskCols.length   && rowNeedsTask(i)).length;
   total3 = allRows.filter((_,i) => targetCols.length && rowNeedsTarget(i)).length;
   total4 = allRows.filter((_,i) => archCols.length   && rowNeedsArch(i)).length;
