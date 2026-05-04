@@ -503,9 +503,67 @@ function showPayloadPreview() {
     document.getElementById('payload-box').textContent = 'Selecione pelo menos uma coluna.';
     return;
   }
+
   const sample = [allRows[0]];
-  const prompt = buildPrompt(sample, activeCols);
-  document.getElementById('payload-box').textContent = prompt;
+  const phase2Cols = activeCols.filter(c => ['task','target'].includes(c.id));
+  const phase3Cols = activeCols.filter(c => ['architecture','model','complementary_technique'].includes(c.id));
+  const hasRegex   = phase2Cols.length > 0;
+
+  let output = '';
+
+  // Fase 1
+  if (hasRegex) {
+    output += `⚡ FASE 1 — Regex (sem API)
+`;
+    output += `Campos: ${phase2Cols.map(c=>c.id).join(', ')} · instantâneo
+`;
+    output += `Texto buscado (título + keywords do artigo 0):
+`;
+    const r = allRows[0];
+    const title = r.Title||r.title||'';
+    const kw1   = r['Author Keywords']||'-';
+    const kw2   = r['Index Keywords']||'-';
+    output += `  Título: ${title}
+`;
+    output += `  Author Keywords: ${kw1}
+`;
+    output += `  Index Keywords: ${kw2}
+`;
+    output += `
+${'─'.repeat(60)}
+
+`;
+  }
+
+  // Fase 2
+  if (phase2Cols.length) {
+    output += `🤖 FASE 2 — API · ${phase2Cols.map(c=>c.id).join(', ')}
+`;
+    output += `Lotes de 5 artigos · 6s entre lotes
+`;
+    output += `Apenas artigos onde regex → "outro"
+
+`;
+    output += buildPrompt(sample, phase2Cols);
+    output += `
+
+${'─'.repeat(60)}
+
+`;
+  }
+
+  // Fase 3
+  if (phase3Cols.length) {
+    output += `🤖 FASE 3 — API · ${phase3Cols.map(c=>c.id).join(', ')}
+`;
+    output += `Lotes de 5 artigos · 6s entre lotes · paralelo com Fase 2
+
+`;
+    output += buildPrompt(sample, phase3Cols);
+  }
+
+  if (!output) output = 'Nenhuma coluna selecionada requer payload.';
+  document.getElementById('payload-box').textContent = output;
 }
 
 function updatePromptPreview() {
