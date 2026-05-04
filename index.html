@@ -533,7 +533,7 @@ function refreshPayloadPreview() {
   if (phase2Cols.length) {
     output += `🤖 FASE 2 — API · ${phase2Cols.map(c=>c.id).join(', ')}\n`;
     output += `Lotes de 5 artigos · 6s entre lotes\n`;
-    output += `Apenas artigos onde regex → "outro"\n\n`;
+    output += `Apenas artigos onde regex não encontrou match (campo vazio)\n\n`;
     output += buildPrompt(sample, phase2Cols);
     output += `\n\n${'─'.repeat(60)}\n\n`;
   }
