@@ -354,11 +354,11 @@ const FILL_MODES = [
 // ── Prompt blocks ──────────────────────────────────────────────────────────
 const PROMPT_BLOCKS = {
   target: `━━ target ━━
-O que é previsto pelo modelo proposto. Siga a HIERARQUIA abaixo em ordem:
+Variável alvo do modelo proposto. Siga a HIERARQUIA abaixo em ordem:
 
-1. "velocidade do vento": previsão de wind speed
-2. "potência": o modelo prevê potência de qualquer fonte (eólica, solar, etc.) e NÃO se enquadra na regra anterior.
-3. "outro": não prevê velocidade do vento nem potência, não é modelo de previsão, ou não aplicável (revisões, otimização pura, etc.)`,
+1. "velocidade do vento": o modelo tem velocidade do vento como variável de saída
+2. "potência": o modelo tem potência como variável de saída (qualquer fonte: eólica, solar, etc.) e NÃO se enquadra na regra anterior
+3. "outro": outra variável de saída, sem modelo proposto claro, ou não aplicável`,
 
   architecture: `━━ architecture ━━
 Liste as famílias arquiteturais do modelo PROPOSTO. Podem ser MÚLTIPLAS tags separadas por vírgula.
