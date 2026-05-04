@@ -708,17 +708,11 @@ const TARGET_RULES = [
   { target: 'potência',            patterns: [/wind power/i] },
 ];
 
-function getSearchText(row, titleOnly = false) {
-  const title = row.Title || row.title || '';
-  if (titleOnly) return title;
-  const kw1 = row['Author Keywords'] || '';
-  const kw2 = row['Index Keywords'] || '';
-  return `${title} ${kw1} ${kw2}`;
-}
-
 function applyRegex(row) {
-  const text      = getSearchText(row);
-  const titleText = getSearchText(row, true);
+  const title = row.Title || row.title || '';
+  const authorKeywords = row['Author Keywords'] || '';
+  const text = `${title} ${authorKeywords}`;
+
   const result    = {};
 
   // task
@@ -726,7 +720,7 @@ function applyRegex(row) {
   for (const rule of TASK_RULES) {
     if (rule.patterns.some(p => p.test(text))) { taskMatch = rule.task; break; }
   }
-  if (!taskMatch && TASK_FORECAST_PATTERNS.some(p => p.test(titleText))) {
+  if (!taskMatch && TASK_FORECAST_PATTERNS.some(p => p.test(text))) {
     taskMatch = 'previsão';
   }
   result.task = taskMatch || null;  // null = no match, send to API
