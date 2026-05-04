@@ -381,7 +381,6 @@ const SOURCE_COLS = ['task_source', 'target_source'];
 const FILL_MODES = [
   { value: 'empty',   label: 'Preencher vazios'  },
   { value: 'all',     label: 'Sobrescrever tudo'  },
-  { value: 'unclear', label: 'Sobrescrever outro' },
 ];
 
 // ── Prompt blocks ──────────────────────────────────────────────────────────
@@ -687,9 +686,7 @@ dz.addEventListener('drop', e => {
 function needsClassification(row, col, mode) {
   const val = (row[col] || '').trim();
   if (mode === 'all') return true;
-  if (mode === 'empty') return val === '' || val === null;
-  if (mode === 'unclear') return val === '' || val === null || val === 'outro' || val === 'other';
-  return false;
+  return val === '' || val === null;
 }
 
 // ── Regex classification ───────────────────────────────────────────────────
@@ -888,7 +885,20 @@ async function startClassification() {
   document.getElementById('btn-pause').style.display = 'inline-block';
   document.getElementById('progress-wrap').classList.add('show');
 
-  const rowNeedsWork = i => activeCols.some(c => needsClassification(allRows[i], c.id, colStates[c.id].mode));
+  // ── Limpar campos antes de começar (modo 'all') ────────────────────────
+  activeCols.forEach(c => {
+    if (colStates[c.id].mode === 'all') {
+      allRows.forEach((row, i) => {
+        allRows[i][c.id] = '';
+        if (SOURCE_COLS.includes(`${c.id}_source`)) {
+          allRows[i][`${c.id}_source`] = '';
+        }
+      });
+    }
+  });
+
+  // After pre-cleanup, all checks are simply "is the field still empty?"
+  const rowNeedsWork = i => activeCols.some(c => (allRows[i][c.id]||'').trim() === '');
 
   // ── Fase 1: regex for task and target ─────────────────────────────────
   const regexCols = ['task','target'].filter(id => activeCols.some(c => c.id === id));
@@ -913,13 +923,14 @@ async function startClassification() {
 
   // ── Recalculate totals after regex (Phase 1) ──────────────────────────
   // ── Separate cols by phase ────────────────────────────────────────────
+  // After pre-cleanup + regex, API phases only need to fill what's still empty
   const taskCols   = activeCols.filter(c => c.id === 'task');
   const targetCols = activeCols.filter(c => c.id === 'target');
   const archCols   = activeCols.filter(c => ['architecture','model','complementary_technique'].includes(c.id));
 
-  const rowNeedsTask   = i => taskCols.some(c   => needsClassification(allRows[i], c.id, colStates[c.id].mode));
-  const rowNeedsTarget = i => targetCols.some(c  => needsClassification(allRows[i], c.id, colStates[c.id].mode));
-  const rowNeedsArch   = i => archCols.some(c    => needsClassification(allRows[i], c.id, colStates[c.id].mode));
+  const rowNeedsTask   = i => taskCols.some(c   => { const v = (allRows[i][c.id]||'').trim(); return v === ''; });
+  const rowNeedsTarget = i => targetCols.some(c  => { const v = (allRows[i][c.id]||'').trim(); return v === ''; });
+  const rowNeedsArch   = i => archCols.some(c    => { const v = (allRows[i][c.id]||'').trim(); return v === ''; });
 
   let done2 = 0, done3 = 0, done4 = 0;
   let total2 = 0, total3 = 0, total4 = 0;
