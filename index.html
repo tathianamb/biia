@@ -451,6 +451,7 @@ function saveKey() {
   localStorage.setItem(LS_KEY, k);
   document.getElementById('overlay').classList.add('hidden');
   document.getElementById('api-bar').style.display = 'flex';
+  document.getElementById('hdr-model').style.display = 'inline';
 }
 function changeKey() { document.getElementById('modal-key').value = ''; document.getElementById('overlay').classList.remove('hidden'); }
 document.getElementById('modal-key').addEventListener('keydown', e => { if (e.key === 'Enter') saveKey(); });
@@ -645,59 +646,6 @@ function applyRegex(row) {
 }
 
 // ── Regex classification ───────────────────────────────────────────────────
-const TASK_RULES = [
-  { task: 'revisão',              patterns: [/systematic review/i, /literature survey/i] },
-  { task: 'simulação física',     patterns: [/\bCFD\b/, /\bLES\b/, /\bWRF\b/] },
-  { task: 'detecção de anomalias',patterns: [/anomaly detection/i, /fault detection/i, /fault diagnosis/i] },
-  { task: 'geração de dados',     patterns: [/data augmentation/i, /synthetic data/i] },
-  { task: 'avaliação de risco',   patterns: [/risk assessment/i] },
-  { task: 'controle',             patterns: [/wake control/i, /pitch control/i, /frequency control/i] },
-  { task: 'modelagem de curva',   patterns: [/power curve/i] },
-  { task: 'avaliação de recurso', patterns: [/resource assessment/i, /wind potential/i] },
-  { task: 'otimização',           patterns: [/\bscheduling\b/i, /\bdispatch\b/i, /\barbitrage\b/i, /unit commitment/i] },
-];
-const TASK_FORECAST_PATTERNS = [/forecasting/i, /prediction/i];
-
-const TARGET_RULES = [
-  { target: 'velocidade do vento', patterns: [/wind speed/i] },
-  { target: 'potência',            patterns: [/wind power/i] },
-];
-
-function getSearchText(row, titleOnly = false) {
-  const title = row.Title || row.title || '';
-  if (titleOnly) return title;
-  const kw1 = row['Author Keywords'] || '';
-  const kw2 = row['Index Keywords'] || '';
-  return `${title} ${kw1} ${kw2}`;
-}
-
-function applyRegex(row) {
-  const text = getSearchText(row);         // title + keywords
-  const titleText = getSearchText(row, true); // title only
-
-  const result = {};
-
-  // ── task ──
-  let taskMatch = null;
-  for (const rule of TASK_RULES) {
-    if (rule.patterns.some(p => p.test(text))) { taskMatch = rule.task; break; }
-  }
-  // previsão: title only, only if no other match
-  if (!taskMatch && TASK_FORECAST_PATTERNS.some(p => p.test(titleText))) {
-    taskMatch = 'previsão';
-  }
-  result.task = taskMatch || 'outro';
-
-  // ── target ──
-  let targetMatch = null;
-  for (const rule of TARGET_RULES) {
-    if (rule.patterns.some(p => p.test(text))) { targetMatch = rule.target; break; }
-  }
-  result.target = targetMatch || 'outro';
-
-  return result;
-}
-
 // ── Prompt builder ─────────────────────────────────────────────────────────
 function buildPrompt(batch, activeCols) {
   const blocks = activeCols.map(c => PROMPT_BLOCKS[c.id]).join('\n\n');
