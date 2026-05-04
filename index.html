@@ -983,9 +983,9 @@ async function startClassification() {
   total3 = allRows.filter((_,i) => targetCols.length && rowNeedsTarget(i)).length;
   total4 = allRows.filter((_,i) => archCols.length   && rowNeedsArch(i)).length;
 
-  if (taskCols.length)   showPhaseRow(2, true);
-  if (targetCols.length) showPhaseRow(3, true);
-  if (archCols.length)   showPhaseRow(4, true);
+  if (taskCols.length)   { showPhaseRow(2, true); setPhaseProgress(2, 0, total2); }
+  if (targetCols.length) { showPhaseRow(3, true); setPhaseProgress(3, 0, total3); }
+  if (archCols.length)   { showPhaseRow(4, true); setPhaseProgress(4, 0, total4); }
 
   try {
     await Promise.all([phase2(), phase3(), phase4()]);
