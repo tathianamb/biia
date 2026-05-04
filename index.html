@@ -609,8 +609,8 @@ function showPayloadPreview() {
 function getSystemPromptBase(activeCols) {
   const blocks = activeCols.map(c => PROMPT_BLOCKS[c.id]).join('\n\n');
   
-  return `Você é um especialista em ML aplicado a previsão de energia eólica.
-Analise o título e o abstract COMPLETO de cada artigo e classifique os campos abaixo:
+  return `Você é um especialista em ML.
+Analise o título, palavras-chaves e o abstract COMPLETO de cada artigo e classifique os campos abaixo:
 
 ${blocks}`;
 }
