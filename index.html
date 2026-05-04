@@ -512,36 +512,56 @@ function refreshPayloadPreview() {
     document.getElementById('payload-box').textContent = 'Selecione pelo menos uma coluna.';
     return;
   }
-  const sample = [allRows[0]];
-  const phase2Cols = activeCols.filter(c => ['task','target'].includes(c.id));
-  const phase3Cols = activeCols.filter(c => ['architecture','model','complementary_technique'].includes(c.id));
-  const hasRegex   = phase2Cols.length > 0;
+  const sample  = [allRows[0]];
+  const r        = allRows[0];
+  const title    = r.Title||r.title||'';
+  const kw1      = r['Author Keywords']||'-';
+  const kw2      = r['Index Keywords']||'-';
+
+  const taskCols_p   = activeCols.filter(c => c.id === 'task');
+  const targetCols_p = activeCols.filter(c => c.id === 'target');
+  const archCols_p   = activeCols.filter(c => ['architecture','model','complementary_technique'].includes(c.id));
+  const hasRegex     = taskCols_p.length > 0 || targetCols_p.length > 0;
+
   let output = '';
+
+  // Fase 1
   if (hasRegex) {
+    const regexFields = [...taskCols_p, ...targetCols_p].map(c=>c.id).join(', ');
     output += `⚡ FASE 1 — Regex (sem API)\n`;
-    output += `Campos: ${phase2Cols.map(c=>c.id).join(', ')} · instantâneo\n`;
+    output += `Campos: ${regexFields} · instantâneo\n`;
     output += `Texto buscado (título + keywords do artigo 0):\n`;
-    const r = allRows[0];
-    const title = r.Title||r.title||'';
-    const kw1   = r['Author Keywords']||'-';
-    const kw2   = r['Index Keywords']||'-';
     output += `  Título: ${title}\n`;
     output += `  Author Keywords: ${kw1}\n`;
     output += `  Index Keywords: ${kw2}\n`;
     output += `\n${'─'.repeat(60)}\n\n`;
   }
-  if (phase2Cols.length) {
-    output += `🤖 FASE 2 — API · ${phase2Cols.map(c=>c.id).join(', ')}\n`;
+
+  // Fase 2: task
+  if (taskCols_p.length) {
+    output += `🤖 FASE 2 — API · task · paralelo com Fases 3 e 4\n`;
     output += `Lotes de 5 artigos · 6s entre lotes\n`;
     output += `Apenas artigos onde regex não encontrou match (campo vazio)\n\n`;
-    output += buildPrompt(sample, phase2Cols);
+    output += buildPrompt(sample, taskCols_p);
     output += `\n\n${'─'.repeat(60)}\n\n`;
   }
-  if (phase3Cols.length) {
-    output += `🤖 FASE 3 — API · ${phase3Cols.map(c=>c.id).join(', ')}\n`;
-    output += `Lotes de 5 artigos · 6s entre lotes · paralelo com Fase 2\n\n`;
-    output += buildPrompt(sample, phase3Cols);
+
+  // Fase 3: target
+  if (targetCols_p.length) {
+    output += `🤖 FASE 3 — API · target · paralelo com Fases 2 e 4\n`;
+    output += `Lotes de 5 artigos · 6s entre lotes\n`;
+    output += `Apenas artigos onde regex não encontrou match (campo vazio)\n\n`;
+    output += buildPrompt(sample, targetCols_p);
+    output += `\n\n${'─'.repeat(60)}\n\n`;
   }
+
+  // Fase 4: arch
+  if (archCols_p.length) {
+    output += `🤖 FASE 4 — API · ${archCols_p.map(c=>c.id).join(', ')} · paralelo com Fases 2 e 3\n`;
+    output += `Lotes de 5 artigos · 6s entre lotes\n\n`;
+    output += buildPrompt(sample, archCols_p);
+  }
+
   if (!output) output = 'Nenhuma coluna selecionada requer payload.';
   document.getElementById('payload-box').textContent = output;
 }
@@ -822,60 +842,79 @@ async function startClassification() {
     updateStats(); renderTable();
   }
 
-  // ── Separate remaining cols for API ───────────────────────────────────
-  // Phase 2: task/target where regex returned 'outro'
-  const apiSimpleCols = activeCols.filter(c => ['task','target'].includes(c.id));
-  // Phase 3: architecture, model, complementary_technique
-  const apiArchCols   = activeCols.filter(c => ['architecture','model','complementary_technique'].includes(c.id));
+  // ── Separate cols by phase ────────────────────────────────────────────
+  const taskCols   = activeCols.filter(c => c.id === 'task');
+  const targetCols = activeCols.filter(c => c.id === 'target');
+  const archCols   = activeCols.filter(c => ['architecture','model','complementary_technique'].includes(c.id));
 
-  const rowNeedsSimple = i => apiSimpleCols.some(c => needsClassification(allRows[i], c.id, colStates[c.id].mode));
-  const rowNeedsArch   = i => apiArchCols.some(c => needsClassification(allRows[i], c.id, colStates[c.id].mode));
+  const rowNeedsTask   = i => taskCols.some(c   => needsClassification(allRows[i], c.id, colStates[c.id].mode));
+  const rowNeedsTarget = i => targetCols.some(c  => needsClassification(allRows[i], c.id, colStates[c.id].mode));
+  const rowNeedsArch   = i => archCols.some(c    => needsClassification(allRows[i], c.id, colStates[c.id].mode));
 
-  let done2 = 0, done3 = 0;
-  const total2 = allRows.filter((_,i) => apiSimpleCols.length && rowNeedsSimple(i)).length;
-  const total3 = allRows.filter((_,i) => apiArchCols.length && rowNeedsArch(i)).length;
+  let done2 = 0, done3 = 0, done4 = 0;
+  const total2 = allRows.filter((_,i) => taskCols.length   && rowNeedsTask(i)).length;
+  const total3 = allRows.filter((_,i) => targetCols.length && rowNeedsTarget(i)).length;
+  const total4 = allRows.filter((_,i) => archCols.length   && rowNeedsArch(i)).length;
 
   function updateProgress() {
     const done = allRows.filter((_,i) => !rowNeedsWork(i)).length;
     const pct  = Math.round(done / allRows.length * 100);
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('progress-pct').textContent = pct + '%';
+    const parts = [];
+    if (taskCols.length)   parts.push(`Fase 2 (task): ${done2}/${total2}`);
+    if (targetCols.length) parts.push(`Fase 3 (target): ${done3}/${total3}`);
+    if (archCols.length)   parts.push(`Fase 4 (arch): ${done4}/${total4}`);
     document.getElementById('progress-label').textContent =
-      `Classificando… ${done}/${allRows.length} | Fase 2: ${done2}/${total2} | Fase 3: ${done3}/${total3}`;
+      `Classificando… ${done}/${allRows.length} | ${parts.join(' | ')}`;
     document.getElementById('btn-download').disabled = false;
     updateStats(); renderTable();
   }
 
-  // ── Phase 2 loop ──────────────────────────────────────────────────────
+  // ── Phase 2: task (API only where regex had no match) ─────────────────
   async function phase2() {
-    if (!apiSimpleCols.length) return;
+    if (!taskCols.length) return;
     for (let i = 0; i < allRows.length; i += BATCH) {
       if (stopFlag) break;
-      if (!allRows.slice(i, i+BATCH).some((_,j) => rowNeedsSimple(i+j))) continue;
+      if (!allRows.slice(i, i+BATCH).some((_,j) => rowNeedsTask(i+j))) continue;
       const batch = allRows.slice(i, i + BATCH);
-      await runWithBackoff(() => classifyBatch(batch, i, apiSimpleCols), 'Fase 2');
-      done2 += batch.filter((_,j) => !rowNeedsSimple(i+j)).length;
+      await runWithBackoff(() => classifyBatch(batch, i, taskCols), 'Fase 2');
+      done2 += batch.filter((_,j) => !rowNeedsTask(i+j)).length;
       updateProgress();
       if (i + BATCH < allRows.length) await sleep(6000);
     }
   }
 
-  // ── Phase 3 loop ──────────────────────────────────────────────────────
+  // ── Phase 3: target (API only where regex had no match) ───────────────
   async function phase3() {
-    if (!apiArchCols.length) return;
+    if (!targetCols.length) return;
+    for (let i = 0; i < allRows.length; i += BATCH) {
+      if (stopFlag) break;
+      if (!allRows.slice(i, i+BATCH).some((_,j) => rowNeedsTarget(i+j))) continue;
+      const batch = allRows.slice(i, i + BATCH);
+      await runWithBackoff(() => classifyBatch(batch, i, targetCols), 'Fase 3');
+      done3 += batch.filter((_,j) => !rowNeedsTarget(i+j)).length;
+      updateProgress();
+      if (i + BATCH < allRows.length) await sleep(6000);
+    }
+  }
+
+  // ── Phase 4: architecture, model, complementary_technique ─────────────
+  async function phase4() {
+    if (!archCols.length) return;
     for (let i = 0; i < allRows.length; i += BATCH) {
       if (stopFlag) break;
       if (!allRows.slice(i, i+BATCH).some((_,j) => rowNeedsArch(i+j))) continue;
       const batch = allRows.slice(i, i + BATCH);
-      await runWithBackoff(() => classifyBatch(batch, i, apiArchCols), 'Fase 3');
-      done3 += batch.filter((_,j) => !rowNeedsArch(i+j)).length;
+      await runWithBackoff(() => classifyBatch(batch, i, archCols), 'Fase 4');
+      done4 += batch.filter((_,j) => !rowNeedsArch(i+j)).length;
       updateProgress();
       if (i + BATCH < allRows.length) await sleep(6000);
     }
   }
 
   try {
-    await Promise.all([phase2(), phase3()]);
+    await Promise.all([phase2(), phase3(), phase4()]);
   } catch(e) { showToast('Erro inesperado: ' + e.message); }
 
   document.getElementById('btn-pause').style.display = 'none';
