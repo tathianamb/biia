@@ -678,14 +678,14 @@ function applyRegex(row) {
   if (!taskMatch && TASK_FORECAST_PATTERNS.some(p => p.test(titleText))) {
     taskMatch = 'previsão';
   }
-  result.task = taskMatch || 'outro';
+  result.task = taskMatch || null;  // null = no match, send to API
 
   // target
   let targetMatch = null;
   for (const rule of TARGET_RULES) {
     if (rule.patterns.some(p => p.test(text))) { targetMatch = rule.target; break; }
   }
-  result.target = targetMatch || 'outro';
+  result.target = targetMatch || null;  // null = no match, send to API
 
   return result;
 }
@@ -813,9 +813,10 @@ async function startClassification() {
     allRows.forEach((row, i) => {
       const regexResult = applyRegex(row);
       regexCols.forEach(id => {
-        if (needsClassification(row, id, colStates[id]?.mode || 'empty')) {
-          allRows[i][id] = regexResult[id];
+        if (needsClassification(row, id, colStates[id]?.mode || 'empty') && regexResult[id] !== null) {
+          allRows[i][id] = regexResult[id];  // only write if regex found a match
         }
+        // null = no match → leave empty → Phase 2 will handle via API
       });
     });
     updateStats(); renderTable();
