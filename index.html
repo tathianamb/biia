@@ -698,7 +698,7 @@ function buildPrompt(batch, activeCols) {
     const ex = { target:'"potência"', architecture:'"Rede Neural, GNN"', model:'"CEEMDAN+GRU"', complementary_technique:'"PSO"', task:'"previsão"' };
     return `"${c.id}":${ex[c.id]||'"-"'}`;
   }).join(',');
-  return `Você é um especialista em ML aplicado à previsão de energia eólica.
+  return `Você é um especialista em aprendizado de máquina e análise de literatura científica.
 Analise o título e o abstract COMPLETO de cada artigo e classifique os campos abaixo.
 
 ${blocks}
