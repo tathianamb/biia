@@ -509,9 +509,9 @@ function buildColSelector() {
   const phase3Cols = COL_DEFS.filter(c => ['architecture','model','complementary_technique'].includes(c.id));
 
   grid.innerHTML = `
-    <div style="grid-column:1/-1;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">⚡ Fase 1+2 — regex + api</div>
+    <div style="grid-column:1/-1;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">⚡ regex + api</div>
     ${phase1Cols.map(colHTML).join('')}
-    <div style="grid-column:1/-1;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:8px 0 2px">🤖 Fase 3 — api</div>
+    <div style="grid-column:1/-1;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:8px 0 2px">🤖 api</div>
     ${phase3Cols.map(colHTML).join('')}
   `;
   updatePromptPreview();
