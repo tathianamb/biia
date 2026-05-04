@@ -159,6 +159,24 @@ main { padding: 16px 20px; max-width: 1040px; margin: 0 auto; }
 .progress-top { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 6px; }
 .progress-bar { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
 .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width .4s; }
+.phase-rows { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
+.phase-row { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+.phase-row .phase-label { width: 140px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.phase-row .phase-bar { flex: 1; height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.phase-row .phase-fill { height: 100%; border-radius: 99px; transition: width .4s; }
+.phase-row .phase-status { width: 120px; flex-shrink: 0; text-align: right; white-space: nowrap; }
+.phase-fill-2 { background: var(--task-prev); }
+.phase-fill-3 { background: var(--target-speed); }
+.phase-fill-4 { background: var(--accent2); }
+.phase-rows { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
+.phase-row { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+.phase-row .phase-label { width: 140px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.phase-row .phase-bar { flex: 1; height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.phase-row .phase-fill { height: 100%; border-radius: 99px; transition: width .4s; }
+.phase-row .phase-status { width: 120px; flex-shrink: 0; text-align: right; white-space: nowrap; }
+.phase-fill-2 { background: var(--task-prev); }
+.phase-fill-3 { background: var(--target-speed); }
+.phase-fill-4 { background: var(--accent2); }
 
 /* ── Controls ── */
 .controls { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
@@ -298,6 +316,28 @@ tr:hover td { background: var(--card); }
       <span id="progress-pct">0%</span>
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="phase-rows" id="phase-rows" style="display:none">
+      <div class="phase-row" id="phase-row-1" style="display:none">
+        <span class="phase-label" id="phase-label-1">⚡ Fase 1 — regex</span>
+        <div class="phase-bar"><div class="phase-fill phase-fill-2" id="phase-fill-1" style="width:0%"></div></div>
+        <span class="phase-status" id="phase-status-1"></span>
+      </div>
+      <div class="phase-row" id="phase-row-2" style="display:none">
+        <span class="phase-label" id="phase-label-2">🤖 Fase 2 — task</span>
+        <div class="phase-bar"><div class="phase-fill phase-fill-2" id="phase-fill-2" style="width:0%"></div></div>
+        <span class="phase-status" id="phase-status-2"></span>
+      </div>
+      <div class="phase-row" id="phase-row-3" style="display:none">
+        <span class="phase-label" id="phase-label-3">🤖 Fase 3 — target</span>
+        <div class="phase-bar"><div class="phase-fill phase-fill-3" id="phase-fill-3" style="width:0%"></div></div>
+        <span class="phase-status" id="phase-status-3"></span>
+      </div>
+      <div class="phase-row" id="phase-row-4" style="display:none">
+        <span class="phase-label" id="phase-label-4">🤖 Fase 4 — arch</span>
+        <div class="phase-bar"><div class="phase-fill phase-fill-4" id="phase-fill-4" style="width:0%"></div></div>
+        <span class="phase-status" id="phase-status-4"></span>
+      </div>
+    </div>
   </div>
 
   <!-- Stats -->
@@ -344,6 +384,8 @@ const COL_DEFS = [
   { id: 'complementary_technique',  label: 'complementary_technique',  type: 'free'   },
   { id: 'task',                     label: 'task',                     type: 'closed' },
 ];
+// Source tracking columns (not selectable, auto-managed)
+const SOURCE_COLS = ['task_source', 'target_source'];
 
 const FILL_MODES = [
   { value: 'empty',   label: 'Preencher vazios'  },
@@ -620,6 +662,7 @@ document.getElementById('file-input').addEventListener('change', e => {
     allRows = parsed.map(r => {
       const row = { ...r };
       COL_DEFS.forEach(c => { if (!(c.id in row)) row[c.id] = ''; });
+      SOURCE_COLS.forEach(s => { if (!(s in row)) row[s] = ''; });
       return row;
     });
     document.getElementById('dz-label').textContent = `✅ ${allRows.length} artigos — ${file.name}`;
@@ -785,13 +828,21 @@ async function classifyBatch(batch, startIdx, activeCols) {
   parsed.forEach(r => {
     const idx = startIdx + r.index;
     if (allRows[idx]) {
-      activeCols.forEach(c => { if (r[c.id] !== undefined) allRows[idx][c.id] = r[c.id]; });
+      activeCols.forEach(c => {
+        if (r[c.id] !== undefined) {
+          allRows[idx][c.id] = r[c.id];
+          // track source for task and target
+          if (['task','target'].includes(c.id)) {
+            allRows[idx][`${c.id}_source`] = 'ai';
+          }
+        }
+      });
     }
   });
 }
 
 // ── Classification ─────────────────────────────────────────────────────────
-async function runWithBackoff(fn, labelPrefix) {
+async function runWithBackoff(fn, phaseNum, total, done) {
   let attempts = 0;
   while (true) {
     if (stopFlag) break;
@@ -803,12 +854,33 @@ async function runWithBackoff(fn, labelPrefix) {
       const waitMin = attempts <= 3 ? 2 : 5;
       for (let t = waitMin * 60; t > 0; t--) {
         if (stopFlag) break;
-        document.getElementById('progress-label').textContent =
-          `⚠️ ${labelPrefix} (tentativa ${attempts}) — retentando em ${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`;
+        const countdown = `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`;
+        setPhaseStatus(phaseNum, `⚠️ tentativa ${attempts} · ${countdown}`);
         await sleep(1000);
       }
     }
   }
+}
+
+function setPhaseStatus(num, status) {
+  const el = document.getElementById(`phase-status-${num}`);
+  if (el) el.textContent = status;
+}
+
+function setPhaseProgress(num, done, total) {
+  const bar = document.getElementById(`phase-fill-${num}`);
+  const status = document.getElementById(`phase-status-${num}`);
+  if (bar) bar.style.width = total > 0 ? Math.round(done/total*100)+'%' : '0%';
+  if (status && !status.textContent.includes('⚠️')) {
+    status.textContent = total > 0 ? `${done}/${total}` : '';
+  }
+}
+
+function showPhaseRow(num, show) {
+  const row = document.getElementById(`phase-row-${num}`);
+  if (row) row.style.display = show ? 'flex' : 'none';
+  const rows = document.getElementById('phase-rows');
+  if (rows) rows.style.display = 'flex';
 }
 
 async function startClassification() {
@@ -829,16 +901,21 @@ async function startClassification() {
   // ── Fase 1: regex for task and target ─────────────────────────────────
   const regexCols = ['task','target'].filter(id => activeCols.some(c => c.id === id));
   if (regexCols.length) {
+    showPhaseRow(1, true);
+    setPhaseStatus(1, 'rodando…');
     document.getElementById('progress-label').textContent = '⚡ Fase 1 — classificando por regex…';
     allRows.forEach((row, i) => {
       const regexResult = applyRegex(row);
       regexCols.forEach(id => {
         if (needsClassification(row, id, colStates[id]?.mode || 'empty') && regexResult[id] !== null) {
-          allRows[i][id] = regexResult[id];  // only write if regex found a match
+          allRows[i][id] = regexResult[id];
+          allRows[i][`${id}_source`] = 'regex';
         }
-        // null = no match → leave empty → Phase 2 will handle via API
+        // null = no match → leave empty → API phases will handle
       });
     });
+    setPhaseStatus(1, '✓ concluída');
+    setPhaseProgress(1, allRows.length, allRows.length);
     updateStats(); renderTable();
   }
 
@@ -861,12 +938,10 @@ async function startClassification() {
     const pct  = Math.round(done / allRows.length * 100);
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('progress-pct').textContent = pct + '%';
-    const parts = [];
-    if (taskCols.length)   parts.push(`Fase 2 (task): ${done2}/${total2}`);
-    if (targetCols.length) parts.push(`Fase 3 (target): ${done3}/${total3}`);
-    if (archCols.length)   parts.push(`Fase 4 (arch): ${done4}/${total4}`);
-    document.getElementById('progress-label').textContent =
-      `Classificando… ${done}/${allRows.length} | ${parts.join(' | ')}`;
+    document.getElementById('progress-label').textContent = `Classificando… ${done}/${allRows.length}`;
+    if (taskCols.length)   setPhaseProgress(2, done2, total2);
+    if (targetCols.length) setPhaseProgress(3, done3, total3);
+    if (archCols.length)   setPhaseProgress(4, done4, total4);
     document.getElementById('btn-download').disabled = false;
     updateStats(); renderTable();
   }
@@ -878,7 +953,7 @@ async function startClassification() {
       if (stopFlag) break;
       if (!allRows.slice(i, i+BATCH).some((_,j) => rowNeedsTask(i+j))) continue;
       const batch = allRows.slice(i, i + BATCH);
-      await runWithBackoff(() => classifyBatch(batch, i, taskCols), 'Fase 2');
+      await runWithBackoff(() => classifyBatch(batch, i, taskCols), 2, total2, done2);
       done2 += batch.filter((_,j) => !rowNeedsTask(i+j)).length;
       updateProgress();
       if (i + BATCH < allRows.length) await sleep(6000);
@@ -892,7 +967,7 @@ async function startClassification() {
       if (stopFlag) break;
       if (!allRows.slice(i, i+BATCH).some((_,j) => rowNeedsTarget(i+j))) continue;
       const batch = allRows.slice(i, i + BATCH);
-      await runWithBackoff(() => classifyBatch(batch, i, targetCols), 'Fase 3');
+      await runWithBackoff(() => classifyBatch(batch, i, targetCols), 3, total3, done3);
       done3 += batch.filter((_,j) => !rowNeedsTarget(i+j)).length;
       updateProgress();
       if (i + BATCH < allRows.length) await sleep(6000);
@@ -906,12 +981,16 @@ async function startClassification() {
       if (stopFlag) break;
       if (!allRows.slice(i, i+BATCH).some((_,j) => rowNeedsArch(i+j))) continue;
       const batch = allRows.slice(i, i + BATCH);
-      await runWithBackoff(() => classifyBatch(batch, i, archCols), 'Fase 4');
+      await runWithBackoff(() => classifyBatch(batch, i, archCols), 4, total4, done4);
       done4 += batch.filter((_,j) => !rowNeedsArch(i+j)).length;
       updateProgress();
       if (i + BATCH < allRows.length) await sleep(6000);
     }
   }
+
+  if (taskCols.length)   showPhaseRow(2, true);
+  if (targetCols.length) showPhaseRow(3, true);
+  if (archCols.length)   showPhaseRow(4, true);
 
   try {
     await Promise.all([phase2(), phase3(), phase4()]);
@@ -1021,7 +1100,7 @@ function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 
 // ── Download ───────────────────────────────────────────────────────────────
 function downloadCSV() {
-  const newCols = COL_DEFS.map(c => c.id);
+  const newCols = [...COL_DEFS.map(c => c.id), ...SOURCE_COLS];
   const originalCols = Object.keys(allRows[0]||{}).filter(k => !newCols.includes(k));
   const headers = [...originalCols, ...newCols];
   const lines = [headers.map(h=>`"${h}"`).join(',')];
