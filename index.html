@@ -460,8 +460,9 @@ loadKey();
 // ── Column selector UI ─────────────────────────────────────────────────────
 function buildColSelector() {
   const grid = document.getElementById('col-grid');
-  grid.innerHTML = COL_DEFS.map(c => `
-    <div class="col-item ${colStates[c.id].active ? 'active' : ''}" id="ci-${c.id}" onclick="toggleColItem('${c.id}')">
+
+  function colHTML(c) {
+    return `<div class="col-item ${colStates[c.id].active ? 'active' : ''}" id="ci-${c.id}" onclick="toggleColItem('${c.id}')">
       <div class="col-item-header">
         <span class="col-name">${c.label}</span>
         <div class="col-toggle"></div>
@@ -469,7 +470,18 @@ function buildColSelector() {
       <select class="col-mode" id="cm-${c.id}" onclick="event.stopPropagation()" onchange="colStates['${c.id}'].mode=this.value;updatePromptPreview()">
         ${FILL_MODES.map(m => `<option value="${m.value}" ${colStates[c.id].mode===m.value?'selected':''}>${m.label}</option>`).join('')}
       </select>
-    </div>`).join('');
+    </div>`;
+  }
+
+  const phase1Cols = COL_DEFS.filter(c => ['target','task'].includes(c.id));
+  const phase3Cols = COL_DEFS.filter(c => ['architecture','model','complementary_technique'].includes(c.id));
+
+  grid.innerHTML = `
+    <div style="grid-column:1/-1;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">⚡ Fase 1+2 — regex + api</div>
+    ${phase1Cols.map(colHTML).join('')}
+    <div style="grid-column:1/-1;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:8px 0 2px">🤖 Fase 3 — api</div>
+    ${phase3Cols.map(colHTML).join('')}
+  `;
   updatePromptPreview();
 }
 
@@ -478,6 +490,7 @@ function toggleColItem(id) {
   const el = document.getElementById(`ci-${id}`);
   el.classList.toggle('active', colStates[id].active);
   updatePromptPreview();
+  if (payloadOpen) showPayloadPreview();
   if (allRows.length) { updateStats(); renderTable(); updateTableHeader(); }
 }
 
