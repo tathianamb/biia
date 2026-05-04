@@ -831,8 +831,8 @@ async function classifyBatch(batch, startIdx, activeCols) {
       activeCols.forEach(c => {
         if (r[c.id] !== undefined) {
           allRows[idx][c.id] = r[c.id];
-          // track source for task and target
-          if (['task','target'].includes(c.id)) {
+          // track source for task and target only if value was set
+          if (['task','target'].includes(c.id) && r[c.id] !== undefined && r[c.id] !== '') {
             allRows[idx][`${c.id}_source`] = 'ai';
           }
         }
@@ -919,6 +919,7 @@ async function startClassification() {
     updateStats(); renderTable();
   }
 
+  // ── Recalculate totals after regex (Phase 1) ──────────────────────────
   // ── Separate cols by phase ────────────────────────────────────────────
   const taskCols   = activeCols.filter(c => c.id === 'task');
   const targetCols = activeCols.filter(c => c.id === 'target');
@@ -929,9 +930,8 @@ async function startClassification() {
   const rowNeedsArch   = i => archCols.some(c    => needsClassification(allRows[i], c.id, colStates[c.id].mode));
 
   let done2 = 0, done3 = 0, done4 = 0;
-  const total2 = allRows.filter((_,i) => taskCols.length   && rowNeedsTask(i)).length;
-  const total3 = allRows.filter((_,i) => targetCols.length && rowNeedsTarget(i)).length;
-  const total4 = allRows.filter((_,i) => archCols.length   && rowNeedsArch(i)).length;
+  // totals calculated after Phase 1 (regex) runs, so they reflect only what needs API
+  let total2 = 0, total3 = 0, total4 = 0;
 
   function updateProgress() {
     const done = allRows.filter((_,i) => !rowNeedsWork(i)).length;
@@ -987,6 +987,11 @@ async function startClassification() {
       if (i + BATCH < allRows.length) await sleep(6000);
     }
   }
+
+  // recalculate totals now that regex has run
+  total2 = allRows.filter((_,i) => taskCols.length   && rowNeedsTask(i)).length;
+  total3 = allRows.filter((_,i) => targetCols.length && rowNeedsTarget(i)).length;
+  total4 = allRows.filter((_,i) => archCols.length   && rowNeedsArch(i)).length;
 
   if (taskCols.length)   showPhaseRow(2, true);
   if (targetCols.length) showPhaseRow(3, true);
