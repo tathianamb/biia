@@ -828,7 +828,7 @@ async function startClassification() {
   // Phase 3: architecture, model, complementary_technique
   const apiArchCols   = activeCols.filter(c => ['architecture','model','complementary_technique'].includes(c.id));
 
-  const rowNeedsSimple = i => apiSimpleCols.some(c => allRows[i][c.id] === 'outro' || needsClassification(allRows[i], c.id, colStates[c.id].mode));
+  const rowNeedsSimple = i => apiSimpleCols.some(c => needsClassification(allRows[i], c.id, colStates[c.id].mode));
   const rowNeedsArch   = i => apiArchCols.some(c => needsClassification(allRows[i], c.id, colStates[c.id].mode));
 
   let done2 = 0, done3 = 0;
