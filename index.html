@@ -1152,6 +1152,9 @@ function downloadCSV() {
   ];
   const lines = [colMap.map(({header}) => `"${header}"`).join(',')];
   allRows.forEach(r => { lines.push(colMap.map(({key}) => `"${String(r[key]||'').replace(/"/g,'""')}"`).join(',')); });
+  const encoded = btoa(unescape(encodeURIComponent(lines.join('\n'))));
+  const a = document.createElement('a');
+  a.href = `data:text/csv;charset=utf-8;base64,${encoded}`;
   a.download = 'biia-output.csv';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
