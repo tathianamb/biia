@@ -1143,14 +1143,15 @@ function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 
 // ── Download ───────────────────────────────────────────────────────────────
 function downloadCSV() {
-  const newCols = [...COL_DEFS.map(c => c.id), ...SOURCE_COLS];
-  const originalCols = Object.keys(allRows[0]||{}).filter(k => !newCols.includes(k));
-  const headers = [...originalCols, ...newCols];
-  const lines = [headers.map(h=>`"${h}"`).join(',')];
-  allRows.forEach(r => { lines.push(headers.map(h=>`"${String(r[h]||'').replace(/"/g,'""')}"`).join(',')); });
-  const encoded = btoa(unescape(encodeURIComponent(lines.join('\n'))));
-  const a = document.createElement('a');
-  a.href = `data:text/csv;charset=utf-8;base64,${encoded}`;
+  const newColIds = [...COL_DEFS.map(c => c.id), ...SOURCE_COLS];
+  const originalCols = Object.keys(allRows[0]||{}).filter(k => !newColIds.includes(k));
+  const colMap = [
+    ...originalCols.map(k => ({ header: k, key: k })),
+    ...COL_DEFS.map(c => ({ header: `_predicted_${c.id}`, key: c.id })),
+    ...SOURCE_COLS.map(k => ({ header: `_predicted_${k}`, key: k })),
+  ];
+  const lines = [colMap.map(({header}) => `"${header}"`).join(',')];
+  allRows.forEach(r => { lines.push(colMap.map(({key}) => `"${String(r[key]||'').replace(/"/g,'""')}"`).join(',')); });
   a.download = 'biia-output.csv';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
