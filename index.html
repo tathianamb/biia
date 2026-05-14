@@ -778,8 +778,9 @@ async function tryModel(model, key, body) {
   return res.json();
 }
 
-async function classifyBatch(batch, startIdx, activeCols) {
+async function classifyBatch(batchItems, activeCols) {
   const key = localStorage.getItem(LS_KEY) || '';
+  const batch = batchItems.map(item => item.row);
   const prompt = buildPrompt(batch, activeCols);
   const body = { contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0, maxOutputTokens:2048} };
   let data;
@@ -823,14 +824,13 @@ async function classifyBatch(batch, startIdx, activeCols) {
   }
 
   parsed.forEach(r => {
-    const idx = startIdx + r.index;
-    if (allRows[idx]) {
+    const item = batchItems[r.index];
+    if (item) {
       activeCols.forEach(c => {
         if (r[c.id] !== undefined) {
-          allRows[idx][c.id] = r[c.id];
-          // track source for task and target only if value was set
-          if (['task','target'].includes(c.id) && r[c.id] !== undefined && r[c.id] !== '') {
-            allRows[idx][`${c.id}_source`] = 'ai';
+          allRows[item.globalIdx][c.id] = r[c.id];
+          if (['task','target'].includes(c.id) && r[c.id] !== '') {
+            allRows[item.globalIdx][`${c.id}_source`] = 'ai';
           }
         }
       });
@@ -960,46 +960,69 @@ async function startClassification() {
   // ── Phase 2: task (API only where regex had no match) ─────────────────
   async function phase2() {
     if (!taskCols.length) return;
-    for (let i = 0; i < allRows.length; i += BATCH) {
+    let buffer = [];
+    for (let i = 0; i < allRows.length; i++) {
       if (stopFlag) break;
-      const batchSlice = allRows.slice(i, i + BATCH);
-      // Count how many in this batch need work BEFORE the API call
-      const neededBefore = batchSlice.filter((_,j) => rowNeedsTask(i+j)).length;
-      if (neededBefore === 0) continue;
-      await runWithBackoff(() => classifyBatch(batchSlice, i, taskCols), 2, total2, done2);
-      done2 += neededBefore;
+      if (!rowNeedsTask(i)) continue;
+      buffer.push({ row: allRows[i], globalIdx: i });
+      if (buffer.length === BATCH) {
+        const snap = buffer.slice(); buffer = [];
+        await runWithBackoff(() => classifyBatch(snap, taskCols), 2, total2, done2);
+        done2 += snap.length;
+        updateProgress();
+        if (!stopFlag) await sleep(6000);
+      }
+    }
+    if (!stopFlag && buffer.length > 0) {
+      await runWithBackoff(() => classifyBatch(buffer, taskCols), 2, total2, done2);
+      done2 += buffer.length;
       updateProgress();
-      if (i + BATCH < allRows.length) await sleep(6000);
     }
   }
 
   // ── Phase 3: target (API only where regex had no match) ───────────────
   async function phase3() {
     if (!targetCols.length) return;
-    for (let i = 0; i < allRows.length; i += BATCH) {
+    let buffer = [];
+    for (let i = 0; i < allRows.length; i++) {
       if (stopFlag) break;
-      const batchSlice = allRows.slice(i, i + BATCH);
-      const neededBefore = batchSlice.filter((_,j) => rowNeedsTarget(i+j)).length;
-      if (neededBefore === 0) continue;
-      await runWithBackoff(() => classifyBatch(batchSlice, i, targetCols), 3, total3, done3);
-      done3 += neededBefore;
+      if (!rowNeedsTarget(i)) continue;
+      buffer.push({ row: allRows[i], globalIdx: i });
+      if (buffer.length === BATCH) {
+        const snap = buffer.slice(); buffer = [];
+        await runWithBackoff(() => classifyBatch(snap, targetCols), 3, total3, done3);
+        done3 += snap.length;
+        updateProgress();
+        if (!stopFlag) await sleep(6000);
+      }
+    }
+    if (!stopFlag && buffer.length > 0) {
+      await runWithBackoff(() => classifyBatch(buffer, targetCols), 3, total3, done3);
+      done3 += buffer.length;
       updateProgress();
-      if (i + BATCH < allRows.length) await sleep(6000);
     }
   }
 
   // ── Phase 4: architecture, model, complementary_technique ─────────────
   async function phase4() {
     if (!archCols.length) return;
-    for (let i = 0; i < allRows.length; i += BATCH) {
+    let buffer = [];
+    for (let i = 0; i < allRows.length; i++) {
       if (stopFlag) break;
-      const batchSlice = allRows.slice(i, i + BATCH);
-      const neededBefore = batchSlice.filter((_,j) => rowNeedsArch(i+j)).length;
-      if (neededBefore === 0) continue;
-      await runWithBackoff(() => classifyBatch(batchSlice, i, archCols), 4, total4, done4);
-      done4 += neededBefore;
+      if (!rowNeedsArch(i)) continue;
+      buffer.push({ row: allRows[i], globalIdx: i });
+      if (buffer.length === BATCH) {
+        const snap = buffer.slice(); buffer = [];
+        await runWithBackoff(() => classifyBatch(snap, archCols), 4, total4, done4);
+        done4 += snap.length;
+        updateProgress();
+        if (!stopFlag) await sleep(6000);
+      }
+    }
+    if (!stopFlag && buffer.length > 0) {
+      await runWithBackoff(() => classifyBatch(buffer, archCols), 4, total4, done4);
+      done4 += buffer.length;
       updateProgress();
-      if (i + BATCH < allRows.length) await sleep(6000);
     }
   }
 
