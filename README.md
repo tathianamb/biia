@@ -12,8 +12,8 @@ BIIA was developed as part of a systematic literature review on **wind energy fo
 
 - **No installation required** — runs entirely in the browser as a PWA (installable on desktop and mobile)
 - **Selective classification** — choose which columns to classify in each session
-- **Fill modes per column** — fill empty cells only, overwrite everything, or reprocess unclear values
-- **Three-phase classification** — regex pre-classification followed by two parallel API phases
+- **Fill modes per column** — fill empty cells only, or overwrite everything
+- **Four-phase classification** — regex pre-classification followed by three parallel API phases
 - **Dynamic prompt construction** — the prompt sent to the AI is built automatically based on selected columns
 - **Rich context inference** — uses `Title`, `Abstract`, `Author Keywords`, and `Index Keywords`
 - **Atomic architecture tags** — a single paper receives all applicable tags
@@ -65,19 +65,25 @@ Classification follows a strict hierarchy applied in order:
 
 ## Classification methodology
 
-### Three-phase pipeline
+### Four-phase pipeline
 
-BIIA classifies papers through three sequential phases. Phases 2 and 3 run in parallel to minimize total processing time.
+BIIA classifies papers through four phases. Phases 2, 3, and 4 run in parallel to minimize total processing time.
 
 ```
 Phase 1 — Regex (instantaneous, no API calls)
-  └─ Classifies task and target for all papers
-  └─ Papers without a confident match receive 'outro'
+  └─ Classifies task and target using title and author keywords
+  └─ Papers without a confident match are left empty → handled by API phases
 
-Phase 2 — API: task and target        ─┐
-  └─ Only papers where regex → 'outro'  ├─ run in parallel
-                                         │
-Phase 3 — API: architecture, model,   ─┘
+Phase 2 — API: task              ─┐
+  └─ Only papers where regex      │
+     found no match               ├─ run in parallel
+                                   │
+Phase 3 — API: target            ─┤
+  └─ Only papers where regex      │
+     found no match               │
+                                   │
+Phase 4 — API: architecture,    ─┘
+          model,
           complementary_technique
   └─ All papers requiring these columns
 ```
@@ -88,16 +94,16 @@ This design significantly reduces API usage: only ambiguous cases reach the API 
 
 ### Phase 1 — Regex classification
 
-Regex classification is conservative by design: it only assigns a value when there is high confidence in the match. When in doubt, the paper falls through to `outro` and is handled by the API in Phase 2.
+Regex classification is conservative by design: it only assigns a value when there is high confidence in the match. Papers without a confident match are left empty and handled by the API in the corresponding Phase 2 or 3.
 
 #### Search scope
 
 | Column | Search fields |
 |--------|--------------|
-| `task` | Title + Author Keywords + Index Keywords (except `previsão`: Title only) |
-| `target` | Title + Author Keywords + Index Keywords |
+| `task` | Title + Author Keywords |
+| `target` | Title + Author Keywords |
 
-The abstract is intentionally excluded from regex search. Terms such as "forecasting", "optimization", or "wind speed" frequently appear in the abstract as context, background, or baseline description — not as the paper's primary contribution. Restricting search to the title and keywords yields higher precision at the cost of recall, with the API handling the remaining cases.
+The abstract and Index Keywords are intentionally excluded from regex search. Terms such as "forecasting", "optimization", or "wind speed" frequently appear in the abstract and keyword lists as context, background, or baseline description — not as the paper's primary contribution. Restricting search to the title and author keywords yields higher precision at the cost of recall, with the API handling the remaining cases.
 
 #### Task hierarchy
 
@@ -114,13 +120,12 @@ Rules are tested in order. The first match wins.
 | 7 | `modelagem de curva` | "power curve" |
 | 8 | `avaliação de recurso` | "resource assessment", "wind potential" |
 | 9 | `otimização` | "scheduling", "dispatch", "arbitrage", "unit commitment" |
-| 10 | `previsão` | "forecasting", "prediction" — **Title only** |
-| 11 | `outro` | No match → sent to API |
+| 10 | `previsão` | "forecasting", "prediction" |
+| 11 | _(no match)_ | Left empty → sent to API in Phase 2 |
 
 **Key design decisions:**
 
 - `otimização` is tested **before** `previsão` because optimization papers frequently mention forecasting as a subcomponent (e.g., "optimization of wind power forecasting"). The reverse is not true.
-- `previsão` is restricted to the title only, as "forecasting" and "prediction" appear in virtually every wind energy abstract regardless of the paper's primary task.
 - Terms are kept to a maximum of two words to maximize match rate while preserving specificity. Longer phrases are too rare to be useful.
 - `optimization` alone is deliberately excluded from the `otimização` trigger terms, as it commonly refers to model hyperparameter optimization rather than operational optimization.
 - `SCADA` alone is excluded from `detecção de anomalias` because SCADA data is used across multiple tasks including forecasting.
@@ -131,7 +136,7 @@ Rules are tested in order. The first match wins.
 |----------|--------|---------------|
 | 1 | `velocidade do vento` | "wind speed" |
 | 2 | `potência` | "wind power" |
-| 3 | `outro` | No match → sent to API |
+| 3 | _(no match)_ | Left empty → sent to API in Phase 3 |
 
 **Key design decisions:**
 
@@ -140,17 +145,23 @@ Rules are tested in order. The first match wins.
 
 ---
 
-### Phase 2 — API for task and target
+### Phase 2 — API for task
 
-Papers where the regex returned `outro` for `task` or `target` are sent to the Gemini API in batches of 5, with a 6-second interval between batches. The prompt contains only the blocks for the columns being classified, minimizing token usage.
+Papers where the regex found no match for `task` are sent to the Gemini API in batches of 5, with a 6-second interval between batches. The prompt contains only the block for `task`, minimizing token usage.
 
-The API prompt for `task` and `target` follows the same hierarchy as the regex rules, but expressed in natural language with additional context and examples that the model can leverage for ambiguous cases.
+The API prompt for `task` follows the same hierarchy as the regex rules, but expressed in natural language with additional context and examples that the model can leverage for ambiguous cases.
 
 ---
 
-### Phase 3 — API for architecture, model, and complementary_technique
+### Phase 3 — API for target
 
-All papers requiring classification of `architecture`, `model`, or `complementary_technique` are processed via the Gemini API in parallel with Phase 2. These columns cannot be reliably classified by regex because they require understanding the proposed model's structure from the abstract.
+Papers where the regex found no match for `target` are processed via the Gemini API in parallel with Phase 2. The prompt contains only the block for `target`.
+
+---
+
+### Phase 4 — API for architecture, model, and complementary_technique
+
+All papers requiring classification of `architecture`, `model`, or `complementary_technique` are processed via the Gemini API in parallel with Phases 2 and 3. These columns cannot be reliably classified by regex because they require understanding the proposed model's structure from the abstract.
 
 #### Modular prompt engineering
 
@@ -158,7 +169,7 @@ Each column has an independent prompt block. BIIA assembles only the blocks for 
 
 #### Automatic retry with backoff
 
-Both Phase 2 and Phase 3 implement automatic retry with exponential backoff:
+Phases 2, 3, and 4 all implement automatic retry with exponential backoff:
 - Attempts 1–3: wait 2 minutes before retrying
 - Attempt 4 onward: wait 5 minutes before retrying
 - Classification never stops automatically — only the user can pause it
@@ -173,46 +184,20 @@ The taxonomy uses atomic, combinable tags. Any model, however complex, is descri
 
 | Tag | Description | Examples |
 |-----|-------------|---------|
-| **Transformer** | Self-attention as the central mechanism | Informer, PatchTST, Crossformer, iTransformer, Autoformer, TFT |
-| **State Space Model** | Neural state-space models — non-attentional sequential processing | Mamba, S4, S5, TimeMachine |
+| **Transformer** | Self-attention as the central mechanism, including structured state-space variants | Informer, PatchTST, Crossformer, Autoformer, Mamba |
 | **Rede Recorrente** | Explicit temporal recurrence with gating | LSTM, GRU, BiLSTM, RNN, Elman, xLSTM |
 | **Rede Convolucional** | Local feature extraction via convolutions | CNN, TCN, ResNet, ConvLSTM, WaveNet |
 | **Rede de Grafos** | Models over graph structures | GCN, GAT, AGCRN, DCRNN, STGCN |
 | **MLP-based** | Multi-layer perceptrons with specialized blocks | N-BEATS, N-HiTS, TSMixer, TiDE |
-| **Atenção** | Attention added to a non-Transformer backbone | LSTM+Attention, CNN+Multi-head Attention |
-| **Decomposição** | Signal decomposition as preprocessing | EMD, VMD, CEEMDAN, Wavelet, SSA, STL |
 | **Ensemble** | Combination of multiple models or trees | XGBoost, LightGBM, Random Forest, CatBoost, Stacking |
-| **Estatístico** | Classical statistical models | ARIMA, SARIMA, ETS, Prophet, Bayesian DLM, Weibull |
-| **Probabilístico** | Models producing distributions or intervals | DeepAR, Gaussian Process, Quantile Regression, CSDI |
-| **Físico** | Physics-based or simulation models | NWP, WRF, CFD, PINN |
 | **Neuro-Fuzzy** | Fuzzy inference combined with neural networks | ANFIS, FIS+NN |
 | **LLM** | General-purpose large language models adapted for time series | GPT, LLaMA |
-| **Foundation Model** | Models pre-trained specifically for time series | TimeGPT, Chronos, Lag-Llama, Moirai |
-| **Outro** | Not classifiable in the above | KAN, Diffusion Models, Quantum NN, RL |
+| **Estatístico** | Classical statistical models | ARIMA, SARIMA, regression, Bayesian DLM |
+| **Físico** | Physics-based or simulation models | NWP, WRF, CFD, LES |
+| **Outro** | Not classifiable in the above | KAN, Diffusion Models, Quantum NN, RL, GAM |
+| **-** | No proposed model | — |
 
-#### Decision flowchart
-
-The AI follows this flowchart when classifying `architecture`:
-
-1. Is there signal decomposition? → add `Decomposição`
-2. Does it incorporate physics or simulation? → add `Físico`
-3. Identify the predictive backbone(s) → add all applicable tags
-4. Is there an attention mechanism on a non-Transformer backbone? → add `Atenção`
-5. Does the model produce distributions or prediction intervals? → add `Probabilístico`
-
-#### Design rationale
-
-**Why atomic tags instead of hybrid families?**
-An earlier version used composite families such as `Híbrido Decomposição-ML`. This became unsustainable as the dataset revealed increasingly complex architectures. Atomic tags allow any combination to be expressed without modifying the taxonomy. The trade-off is that a single paper contributes to multiple tag counts simultaneously, which must be accounted for in quantitative analyses.
-
-**Why is `Atenção` separate from `Transformer`?**
-The Transformer uses self-attention as its core structural element — adding `Atenção` to a Transformer would be redundant. The `Atenção` tag is reserved for attention grafted onto a non-Transformer backbone as an enhancement.
-
-**Why is `Probabilístico` orthogonal?**
-A model can be probabilistic regardless of its backbone. DeepAR uses recurrent layers but produces distributions; TFT is Transformer-based but also probabilistic. Treating `Probabilístico` as orthogonal allows this dimension to be analyzed independently.
-
-**Why are `LLM` and `Foundation Model` separate?**
-LLMs (GPT, LLaMA) are general-purpose models adapted for time series through prompting or fine-tuning. Foundation models for time series (TimeGPT, Chronos) are pre-trained specifically on time series data. The distinction matters for understanding the role of pre-training in wind energy forecasting research.
+> **Note:** Metaheuristics (PSO, GA, NSGA) and training paradigms (transfer learning, federated learning) are not architecture tags — they are classified under `complementary_technique`.
 
 ---
 
@@ -224,7 +209,6 @@ Each selected column can be configured independently:
 |------|----------|
 | Preencher vazios | Skips rows that already have a value — useful for resuming sessions |
 | Sobrescrever tudo | Reprocesses every row — useful after refining the taxonomy |
-| Sobrescrever outro | Reprocesses only rows classified as `outro` — useful for reviewing ambiguous cases |
 
 ---
 
@@ -251,11 +235,25 @@ A CSV file with at least `Title` and `Abstract` columns. When available, `Author
 
 ---
 
-## CSV output example
+## CSV output
+
+All original columns are preserved. BIIA appends the following columns:
+
+| Column | Description |
+|--------|-------------|
+| `architecture` | Atomic architecture tags, comma-separated |
+| `model` | Name or acronym of the proposed model |
+| `complementary_technique` | Complementary techniques, comma-separated |
+| `task_predicted` | Classified task value |
+| `target_predicted` | Classified target value |
+| `task_source` | How `task` was classified: `regex` or `ai` |
+| `target_source` | How `target` was classified: `regex` or `ai` |
+
+### Example
 
 ```
-Title,Abstract,Author Keywords,doi,year,target,architecture,model,complementary_technique,task
-"Wind speed forecasting...","This paper proposes...","wind speed; LSTM; VMD","10.xxx",2025,"velocidade do vento","Decomposição, Rede Recorrente","VMD+BiLSTM","PSO","previsão"
+Title,Abstract,Author Keywords,doi,year,architecture,model,complementary_technique,task_predicted,target_predicted,task_source,target_source
+"Wind speed forecasting...","This paper proposes...","wind speed; LSTM; VMD","10.xxx",2025,"Rede Recorrente, Rede Convolucional","VMD+BiLSTM","PSO","previsão","velocidade do vento","regex","regex"
 ```
 
 ---
