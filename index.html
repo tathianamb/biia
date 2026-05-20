@@ -1,398 +1,1216 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#080d14">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="BIIA">
-<title>BIIA</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg:       #080d14;
-  --surface:  #0e1520;
-  --card:     #141e2d;
-  --border:   #1e2d42;
-  --text:     #dce8f5;
-  --muted:    #4a6580;
-  --accent:   #00e5ff;
-  --accent2:  #7c3aed;
-  --success:  #10b981;
-  --warn:     #f59e0b;
-  --danger:   #ef4444;
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#080d14" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="BIIA" />
+    <title>BIIA</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #080d14;
+        --surface: #0e1520;
+        --card: #141e2d;
+        --border: #1e2d42;
+        --text: #dce8f5;
+        --muted: #4a6580;
+        --accent: #00e5ff;
+        --accent2: #7c3aed;
+        --success: #10b981;
+        --warn: #f59e0b;
+        --danger: #ef4444;
+        --target-speed: #38bdf8;
+        --target-speed-bg: #03111e;
+        --target-power: #fbbf24;
+        --target-power-bg: #150e00;
+        --target-both: #34d399;
+        --target-both-bg: #001510;
+        --target-other: #94a3b8;
+        --target-other-bg: #0a0e14;
+        --arch-t: #a78bfa;
+        --arch-t-bg: #0f0820;
+        --arch-ssm: #06b6d4;
+        --arch-ssm-bg: #001820;
+        --arch-rnn: #38bdf8;
+        --arch-rnn-bg: #03111e;
+        --arch-cnn: #f472b6;
+        --arch-cnn-bg: #180510;
+        --arch-gnn: #34d399;
+        --arch-gnn-bg: #001510;
+        --arch-mlp: #fb923c;
+        --arch-mlp-bg: #180800;
+        --arch-hat: #f43f5e;
+        --arch-hat-bg: #180008;
+        --arch-dec: #22d3ee;
+        --arch-dec-bg: #000f18;
+        --arch-ens: #fbbf24;
+        --arch-ens-bg: #150e00;
+        --arch-est: #94a3b8;
+        --arch-est-bg: #0a0e14;
+        --arch-prob: #818cf8;
+        --arch-prob-bg: #080820;
+        --arch-fis: #a3e635;
+        --arch-fis-bg: #0c1300;
+        --arch-nf: #e879f9;
+        --arch-nf-bg: #150018;
+        --arch-llm: #c084fc;
+        --arch-llm-bg: #140020;
+        --arch-fm: #ff6b6b;
+        --arch-fm-bg: #200808;
+        --arch-out: #64748b;
+        --arch-out-bg: #080d14;
+        --task-prev: #34d399;
+        --task-prev-bg: #001510;
+        --task-otim: #fbbf24;
+        --task-otim-bg: #150e00;
+        --task-rec: #38bdf8;
+        --task-rec-bg: #03111e;
+        --task-ctrl: #f472b6;
+        --task-ctrl-bg: #180510;
+        --task-curv: #a78bfa;
+        --task-curv-bg: #0f0820;
+        --task-anom: #f43f5e;
+        --task-anom-bg: #180008;
+        --task-ger: #fb923c;
+        --task-ger-bg: #180800;
+        --task-sim: #a3e635;
+        --task-sim-bg: #0c1300;
+        --task-risk: #e879f9;
+        --task-risk-bg: #150018;
+        --task-rev: #818cf8;
+        --task-rev-bg: #080820;
+        --task-out: #64748b;
+        --task-out-bg: #080d14;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "JetBrains Mono", monospace;
+        min-height: 100vh;
+        overscroll-behavior: none;
+      }
 
-  --target-speed:   #38bdf8; --target-speed-bg:  #03111e;
-  --target-power:   #fbbf24; --target-power-bg:  #150e00;
-  --target-both:    #34d399; --target-both-bg:   #001510;
-  --target-other:   #94a3b8; --target-other-bg:  #0a0e14;
+      /* ── Header ── */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        padding: 0 20px;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .logo {
+        font-family: "Syne", sans-serif;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -1px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .logo-sub {
+        font-size: 10px;
+        color: var(--muted);
+        font-weight: 300;
+        letter-spacing: 0.5px;
+        margin-top: -2px;
+      }
+      .hdr-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .hdr-count {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .hdr-model {
+        font-size: 10px;
+        color: var(--accent);
+        background: #00e5ff15;
+        border: 1px solid #00e5ff30;
+        border-radius: 4px;
+        padding: 2px 8px;
+      }
+      main {
+        padding: 16px 20px;
+        max-width: 1040px;
+        margin: 0 auto;
+      }
 
-  --arch-t:    #a78bfa; --arch-t-bg:    #0f0820;
-  --arch-ssm:  #06b6d4; --arch-ssm-bg:  #001820;
-  --arch-rnn:  #38bdf8; --arch-rnn-bg:  #03111e;
-  --arch-cnn:  #f472b6; --arch-cnn-bg:  #180510;
-  --arch-gnn:  #34d399; --arch-gnn-bg:  #001510;
-  --arch-mlp:  #fb923c; --arch-mlp-bg:  #180800;
-  --arch-hat:  #f43f5e; --arch-hat-bg:  #180008;
-  --arch-dec:  #22d3ee; --arch-dec-bg:  #000f18;
-  --arch-ens:  #fbbf24; --arch-ens-bg:  #150e00;
-  --arch-est:  #94a3b8; --arch-est-bg:  #0a0e14;
-  --arch-prob: #818cf8; --arch-prob-bg: #080820;
-  --arch-fis:  #a3e635; --arch-fis-bg:  #0c1300;
-  --arch-nf:   #e879f9; --arch-nf-bg:   #150018;
-  --arch-llm:  #c084fc; --arch-llm-bg:  #140020;
-  --arch-fm:   #ff6b6b; --arch-fm-bg:   #200808;
-  --arch-out:  #64748b; --arch-out-bg:  #080d14;
+      /* ── Modal ── */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        backdrop-filter: blur(4px);
+      }
+      .overlay.hidden {
+        display: none;
+      }
+      .modal {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 28px 24px;
+        max-width: 400px;
+        width: 100%;
+      }
+      .modal h2 {
+        font-family: "Syne", sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: var(--accent);
+      }
+      .modal p {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 18px;
+        line-height: 1.7;
+        font-family: "JetBrains Mono", monospace;
+      }
+      .modal a {
+        color: var(--accent);
+      }
+      .modal input {
+        width: 100%;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px 14px;
+        font-size: 13px;
+        color: var(--text);
+        font-family: "JetBrains Mono", monospace;
+        outline: none;
+        margin-bottom: 12px;
+      }
+      .modal input:focus {
+        border-color: var(--accent);
+      }
+      .modal input::placeholder {
+        color: var(--muted);
+      }
+      .modal .btn-save {
+        width: 100%;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        color: #000;
+        border: none;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: "Syne", sans-serif;
+        letter-spacing: 0.5px;
+      }
+      .modal .hint {
+        font-size: 10px;
+        color: var(--muted);
+        text-align: center;
+        margin-top: 10px;
+      }
 
-  --task-prev: #34d399; --task-prev-bg: #001510;
-  --task-otim: #fbbf24; --task-otim-bg: #150e00;
-  --task-rec:  #38bdf8; --task-rec-bg:  #03111e;
-  --task-ctrl: #f472b6; --task-ctrl-bg: #180510;
-  --task-curv: #a78bfa; --task-curv-bg: #0f0820;
-  --task-anom: #f43f5e; --task-anom-bg: #180008;
-  --task-ger:  #fb923c; --task-ger-bg:  #180800;
-  --task-sim:  #a3e635; --task-sim-bg:  #0c1300;
-  --task-risk: #e879f9; --task-risk-bg: #150018;
-  --task-rev:  #818cf8; --task-rev-bg:  #080820;
-  --task-out:  #64748b; --task-out-bg:  #080d14;
-}
+      /* ── API bar ── */
+      .api-bar {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+      .api-ok {
+        font-size: 11px;
+        color: var(--success);
+      }
+      .btn-sm {
+        background: none;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 10px;
+        color: var(--muted);
+        cursor: pointer;
+        font-family: "JetBrains Mono", monospace;
+        transition: border-color 0.15s;
+      }
+      .btn-sm:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
 
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+      /* ── Drop zone ── */
+      .dropzone {
+        border: 1px dashed var(--border);
+        border-radius: 12px;
+        padding: 32px 24px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: var(--surface);
+        margin-bottom: 14px;
+        position: relative;
+        overflow: hidden;
+      }
+      .dropzone::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #00e5ff08, #7c3aed08);
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      .dropzone:hover::before,
+      .dropzone.active::before {
+        opacity: 1;
+      }
+      .dropzone:hover,
+      .dropzone.active {
+        border-color: var(--accent);
+      }
+      .dropzone .icon {
+        font-size: 28px;
+        margin-bottom: 8px;
+      }
+      .dropzone .label {
+        font-family: "Syne", sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .dropzone .hint {
+        font-size: 10px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'JetBrains Mono', monospace;
-  min-height: 100vh;
-  overscroll-behavior: none;
-}
+      /* ── Section ── */
+      .section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 14px;
+      }
+      .section-title {
+        font-size: 10px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 12px;
+      }
 
-/* ── Header ── */
-header {
-  position: sticky; top: 0; z-index: 100;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  padding: 0 20px;
-  height: 52px;
-  display: flex; align-items: center; gap: 16px;
-}
-.logo {
-  font-family: 'Syne', sans-serif;
-  font-size: 22px; font-weight: 800;
-  letter-spacing: -1px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.logo-sub {
-  font-size: 10px; color: var(--muted);
-  font-weight: 300; letter-spacing: .5px;
-  margin-top: -2px;
-}
-.hdr-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-.hdr-count { font-size: 11px; color: var(--muted); }
-.hdr-model { font-size: 10px; color: var(--accent); background: #00e5ff15; border: 1px solid #00e5ff30; border-radius: 4px; padding: 2px 8px; }
+      /* ── Prompt preview ── */
+      .prompt-preview {
+        display: none;
+      }
+      .prompt-preview.show {
+        display: block;
+      }
+      .prompt-box {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 14px;
+        font-size: 10px;
+        color: var(--muted);
+        line-height: 1.7;
+        max-height: 200px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+        margin-top: 8px;
+      }
+      .toggle-preview {
+        font-size: 10px;
+        color: var(--accent);
+        cursor: pointer;
+        background: none;
+        border: none;
+        font-family: "JetBrains Mono", monospace;
+        padding: 0;
+        display: inline;
+      }
 
-main { padding: 16px 20px; max-width: 1040px; margin: 0 auto; }
+      /* ── Rule cards ── */
+      .rule-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        margin-bottom: 8px;
+        overflow: hidden;
+      }
+      .rule-card.active-rule {
+        border-color: #00e5ff30;
+      }
+      .rule-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        cursor: pointer;
+        user-select: none;
+      }
+      .rule-expand-icon {
+        color: var(--muted);
+        font-size: 10px;
+        width: 10px;
+        flex-shrink: 0;
+      }
+      .rule-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text);
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .rule-card.active-rule .rule-name {
+        color: var(--accent);
+      }
+      .rule-method-badge {
+        font-size: 9px;
+        padding: 2px 6px;
+        border-radius: 99px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        flex-shrink: 0;
+      }
+      .badge-regex {
+        color: var(--success) !important;
+        border-color: var(--success) !important;
+        background: #10b98115 !important;
+      }
+      .badge-ai {
+        color: var(--accent) !important;
+        border-color: var(--accent) !important;
+        background: #00e5ff15 !important;
+      }
+      .badge-both {
+        color: var(--warn) !important;
+        border-color: var(--warn) !important;
+        background: #f59e0b15 !important;
+      }
+      .rule-toggle {
+        width: 28px;
+        height: 15px;
+        background: var(--border);
+        border-radius: 99px;
+        position: relative;
+        transition: background 0.15s;
+        flex-shrink: 0;
+        cursor: pointer;
+      }
+      .rule-toggle::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 11px;
+        height: 11px;
+        background: var(--muted);
+        border-radius: 50%;
+        transition: all 0.15s;
+      }
+      .rule-card.active-rule .rule-toggle {
+        background: var(--accent);
+      }
+      .rule-card.active-rule .rule-toggle::after {
+        left: 15px;
+        background: #000;
+      }
+      .rule-del {
+        color: var(--danger);
+        font-size: 15px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0 2px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+      .rule-body {
+        padding: 0 12px 12px;
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+        border-top: 1px solid var(--border);
+      }
+      .rule-body.open {
+        display: flex;
+      }
+      .rule-field-label {
+        font-size: 9px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin-bottom: 4px;
+      }
+      .rule-input {
+        width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 7px 10px;
+        font-size: 11px;
+        color: var(--text);
+        font-family: "JetBrains Mono", monospace;
+        outline: none;
+      }
+      .rule-input:focus {
+        border-color: var(--accent);
+      }
+      .rule-textarea {
+        width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 8px 10px;
+        font-size: 10px;
+        color: var(--text);
+        font-family: "JetBrains Mono", monospace;
+        outline: none;
+        resize: vertical;
+        min-height: 80px;
+        line-height: 1.6;
+      }
+      .rule-textarea:focus {
+        border-color: var(--accent);
+      }
+      .rule-cols-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+      .col-chip {
+        font-size: 10px;
+        padding: 3px 8px;
+        border-radius: 99px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--muted);
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.15s;
+      }
+      .col-chip.selected {
+        border-color: var(--accent);
+        background: #00e5ff15;
+        color: var(--accent);
+      }
+      .method-tabs {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .method-tab {
+        font-size: 10px;
+        padding: 4px 10px;
+        border-radius: 99px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--muted);
+        cursor: pointer;
+        font-family: "JetBrains Mono", monospace;
+        transition: all 0.15s;
+      }
+      .method-tab.active {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: #00e5ff10;
+      }
+      .mode-select {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 5px 8px;
+        font-size: 10px;
+        color: var(--text);
+        font-family: "JetBrains Mono", monospace;
+        outline: none;
+      }
+      .preset-chip {
+        font-size: 10px;
+        padding: 4px 12px;
+        border-radius: 99px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+        cursor: pointer;
+        font-family: "JetBrains Mono", monospace;
+        transition: all 0.15s;
+      }
+      .preset-chip:hover:not(:disabled) {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .preset-chip:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .rule-body-inner {
+        padding-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
 
-/* ── Modal ── */
-.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; backdrop-filter: blur(4px); }
-.overlay.hidden { display: none; }
-.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; max-width: 400px; width: 100%; }
-.modal h2 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--accent); }
-.modal p { font-size: 12px; color: var(--muted); margin-bottom: 18px; line-height: 1.7; font-family: 'JetBrains Mono', monospace; }
-.modal a { color: var(--accent); }
-.modal input { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 13px; color: var(--text); font-family: 'JetBrains Mono', monospace; outline: none; margin-bottom: 12px; }
-.modal input:focus { border-color: var(--accent); }
-.modal input::placeholder { color: var(--muted); }
-.modal .btn-save { width: 100%; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #000; border: none; border-radius: 8px; padding: 12px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Syne', sans-serif; letter-spacing: .5px; }
-.modal .hint { font-size: 10px; color: var(--muted); text-align: center; margin-top: 10px; }
+      /* ── Progress ── */
+      .progress-wrap {
+        margin-bottom: 14px;
+        display: none;
+      }
+      .progress-wrap.show {
+        display: block;
+      }
+      .progress-top {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      .progress-bar {
+        height: 3px;
+        background: var(--border);
+        border-radius: 99px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+        border-radius: 99px;
+        transition: width 0.4s;
+      }
+      .phase-rows {
+        display: none;
+        flex-direction: column;
+        gap: 5px;
+        margin-top: 8px;
+      }
+      .phase-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 10px;
+        color: var(--muted);
+        font-family: "JetBrains Mono", monospace;
+      }
+      .phase-label {
+        width: 160px;
+        flex-shrink: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .phase-bar {
+        flex: 1;
+        height: 3px;
+        background: var(--border);
+        border-radius: 99px;
+        overflow: hidden;
+      }
+      .phase-fill {
+        height: 100%;
+        border-radius: 99px;
+        transition: width 0.4s;
+      }
+      .phase-fill-regex {
+        background: var(--success);
+      }
+      .phase-fill-ai {
+        background: var(--accent);
+      }
+      .phase-status {
+        width: 100px;
+        flex-shrink: 0;
+        text-align: right;
+        white-space: nowrap;
+      }
 
-/* ── API bar ── */
-.api-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-.api-ok { font-size: 11px; color: var(--success); }
-.btn-sm { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 10px; color: var(--muted); cursor: pointer; font-family: 'JetBrains Mono', monospace; transition: border-color .15s; }
-.btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+      /* ── Controls ── */
+      .controls {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .btn {
+        border: none;
+        border-radius: 8px;
+        padding: 9px 18px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: "Syne", sans-serif;
+        transition:
+          opacity 0.15s,
+          transform 0.1s;
+        letter-spacing: 0.3px;
+      }
+      .btn:active {
+        transform: scale(0.97);
+      }
+      .btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .btn-start {
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        color: #000;
+      }
+      .btn-pause {
+        background: var(--warn);
+        color: #000;
+      }
+      .btn-download {
+        background: var(--success);
+        color: #000;
+      }
+      .btn-clr {
+        background: var(--card);
+        color: var(--muted);
+        border: 1px solid var(--border);
+      }
+      .search {
+        flex: 1;
+        min-width: 150px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 9px 12px;
+        font-size: 12px;
+        color: var(--text);
+        font-family: "JetBrains Mono", monospace;
+        outline: none;
+      }
+      .search:focus {
+        border-color: var(--accent);
+      }
+      .search::placeholder {
+        color: var(--muted);
+      }
+      .count-label {
+        font-size: 10px;
+        color: var(--muted);
+      }
 
-/* ── Drop zone ── */
-.dropzone { border: 1px dashed var(--border); border-radius: 12px; padding: 32px 24px; text-align: center; cursor: pointer; transition: all .2s; background: var(--surface); margin-bottom: 14px; position: relative; overflow: hidden; }
-.dropzone::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, #00e5ff08, #7c3aed08); opacity: 0; transition: opacity .2s; }
-.dropzone:hover::before, .dropzone.active::before { opacity: 1; }
-.dropzone:hover, .dropzone.active { border-color: var(--accent); }
-.dropzone .icon { font-size: 28px; margin-bottom: 8px; }
-.dropzone .label { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; }
-.dropzone .hint { font-size: 10px; color: var(--muted); margin-top: 4px; }
+      /* ── Stats ── */
+      .stats-wrap {
+        margin-bottom: 14px;
+      }
+      .stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .stat-pill {
+        border-radius: 99px;
+        padding: 4px 12px;
+        cursor: pointer;
+        transition: transform 0.15s;
+        border: 1px solid transparent;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 10px;
+        font-weight: 600;
+      }
+      .stat-pill:active {
+        transform: scale(0.96);
+      }
+      .stat-pill.active {
+        border-color: currentColor;
+      }
+      .stat-pill .sn {
+        font-family: "Syne", sans-serif;
+        font-size: 13px;
+        font-weight: 800;
+      }
+      .p-target-speed {
+        background: var(--target-speed-bg);
+        color: var(--target-speed);
+      }
+      .p-target-power {
+        background: var(--target-power-bg);
+        color: var(--target-power);
+      }
+      .p-target-both {
+        background: var(--target-both-bg);
+        color: var(--target-both);
+      }
+      .p-target-other {
+        background: var(--target-other-bg);
+        color: var(--target-other);
+      }
+      .p-arch-t {
+        background: var(--arch-t-bg);
+        color: var(--arch-t);
+      }
+      .p-arch-ssm {
+        background: var(--arch-ssm-bg);
+        color: var(--arch-ssm);
+      }
+      .p-arch-rnn {
+        background: var(--arch-rnn-bg);
+        color: var(--arch-rnn);
+      }
+      .p-arch-cnn {
+        background: var(--arch-cnn-bg);
+        color: var(--arch-cnn);
+      }
+      .p-arch-gnn {
+        background: var(--arch-gnn-bg);
+        color: var(--arch-gnn);
+      }
+      .p-arch-mlp {
+        background: var(--arch-mlp-bg);
+        color: var(--arch-mlp);
+      }
+      .p-arch-hat {
+        background: var(--arch-hat-bg);
+        color: var(--arch-hat);
+      }
+      .p-arch-dec {
+        background: var(--arch-dec-bg);
+        color: var(--arch-dec);
+      }
+      .p-arch-ens {
+        background: var(--arch-ens-bg);
+        color: var(--arch-ens);
+      }
+      .p-arch-est {
+        background: var(--arch-est-bg);
+        color: var(--arch-est);
+      }
+      .p-arch-prob {
+        background: var(--arch-prob-bg);
+        color: var(--arch-prob);
+      }
+      .p-arch-fis {
+        background: var(--arch-fis-bg);
+        color: var(--arch-fis);
+      }
+      .p-arch-nf {
+        background: var(--arch-nf-bg);
+        color: var(--arch-nf);
+      }
+      .p-arch-llm {
+        background: var(--arch-llm-bg);
+        color: var(--arch-llm);
+      }
+      .p-arch-fm {
+        background: var(--arch-fm-bg);
+        color: var(--arch-fm);
+      }
+      .p-arch-out {
+        background: var(--arch-out-bg);
+        color: var(--arch-out);
+        border: 1px solid var(--border);
+      }
+      .p-task-prev {
+        background: var(--task-prev-bg);
+        color: var(--task-prev);
+      }
+      .p-task-otim {
+        background: var(--task-otim-bg);
+        color: var(--task-otim);
+      }
+      .p-task-rec {
+        background: var(--task-rec-bg);
+        color: var(--task-rec);
+      }
+      .p-task-ctrl {
+        background: var(--task-ctrl-bg);
+        color: var(--task-ctrl);
+      }
+      .p-task-curv {
+        background: var(--task-curv-bg);
+        color: var(--task-curv);
+      }
+      .p-task-anom {
+        background: var(--task-anom-bg);
+        color: var(--task-anom);
+      }
+      .p-task-ger {
+        background: var(--task-ger-bg);
+        color: var(--task-ger);
+      }
+      .p-task-sim {
+        background: var(--task-sim-bg);
+        color: var(--task-sim);
+      }
+      .p-task-risk {
+        background: var(--task-risk-bg);
+        color: var(--task-risk);
+      }
+      .p-task-rev {
+        background: var(--task-rev-bg);
+        color: var(--task-rev);
+      }
+      .p-task-out {
+        background: var(--task-out-bg);
+        color: var(--task-out);
+        border: 1px solid var(--border);
+      }
+      .p-pending {
+        background: var(--card);
+        color: var(--muted);
+        border: 1px solid var(--border);
+      }
+      .p-custom {
+        background: #0a0e14;
+        color: #94a3b8;
+        border: 1px solid var(--border);
+      }
 
-/* ── Column selector ── */
-.section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
-.section-title { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
-.col-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-@media(min-width: 600px) { .col-grid { grid-template-columns: repeat(3, 1fr); } }
+      /* ── Table ── */
+      .table-wrap {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .table-inner {
+        overflow-x: auto;
+        max-height: 50vh;
+        overflow-y: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+      }
+      thead {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+      th {
+        background: var(--card);
+        padding: 9px 12px;
+        text-align: left;
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+      }
+      td {
+        padding: 7px 12px;
+        border-top: 1px solid var(--border);
+        vertical-align: middle;
+      }
+      tr:hover td {
+        background: var(--card);
+      }
+      .idx {
+        color: var(--muted);
+        font-size: 9px;
+        width: 36px;
+      }
+      .title-cell {
+        max-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 28%;
+        color: var(--text);
+      }
+      .mono-cell {
+        max-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .tags-cell {
+        white-space: nowrap;
+      }
+      .badge {
+        display: inline-block;
+        border-radius: 99px;
+        padding: 1px 7px;
+        font-size: 9px;
+        font-weight: 600;
+        white-space: nowrap;
+        margin: 1px;
+      }
+      .table-footer {
+        padding: 8px 14px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 10px;
+        text-align: center;
+      }
 
-.col-item { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; cursor: pointer; transition: all .15s; }
-.col-item.active { border-color: var(--accent); background: #00e5ff08; }
-.col-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-.col-name { font-size: 11px; font-weight: 500; color: var(--text); }
-.col-item.active .col-name { color: var(--accent); }
-.col-toggle { width: 28px; height: 15px; background: var(--border); border-radius: 99px; position: relative; transition: background .15s; flex-shrink: 0; }
-.col-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 11px; height: 11px; background: var(--muted); border-radius: 50%; transition: all .15s; }
-.col-item.active .col-toggle { background: var(--accent); }
-.col-item.active .col-toggle::after { left: 15px; background: #000; }
-
-.col-mode { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 5px; padding: 4px 8px; font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; outline: none; cursor: pointer; display: none; }
-.col-item.active .col-mode { display: block; border-color: #00e5ff20; color: var(--text); }
-.col-mode option { background: var(--card); }
-
-/* ── Prompt preview ── */
-.prompt-preview { display: none; }
-.prompt-preview.show { display: block; }
-.prompt-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px; font-size: 10px; color: var(--muted); line-height: 1.7; max-height: 200px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; }
-.prompt-box strong { color: var(--accent); }
-.toggle-preview { font-size: 10px; color: var(--accent); cursor: pointer; background: none; border: none; font-family: 'JetBrains Mono', monospace; padding: 0; margin-top: 8px; display: block; }
-
-/* ── Progress ── */
-.progress-wrap { margin-bottom: 14px; display: none; }
-.progress-wrap.show { display: block; }
-.progress-top { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 6px; }
-.progress-bar { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
-.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width .4s; }
-.phase-rows { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
-.phase-row { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
-.phase-row .phase-label { width: 140px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.phase-row .phase-bar { flex: 1; height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
-.phase-row .phase-fill { height: 100%; border-radius: 99px; transition: width .4s; }
-.phase-row .phase-status { width: 120px; flex-shrink: 0; text-align: right; white-space: nowrap; }
-.phase-fill-2 { background: var(--task-prev); }
-.phase-fill-3 { background: var(--target-speed); }
-.phase-fill-4 { background: var(--accent2); }
-
-/* ── Controls ── */
-.controls { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
-.btn { border: none; border-radius: 8px; padding: 9px 18px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Syne', sans-serif; transition: opacity .15s, transform .1s; letter-spacing: .3px; }
-.btn:active { transform: scale(0.97); }
-.btn:disabled { opacity: .35; cursor: default; }
-.btn-start { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #000; }
-.btn-pause { background: var(--warn); color: #000; }
-.btn-download { background: var(--success); color: #000; }
-.btn-clr { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
-.search { flex: 1; min-width: 150px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 12px; color: var(--text); font-family: 'JetBrains Mono', monospace; outline: none; }
-.search:focus { border-color: var(--accent); }
-.search::placeholder { color: var(--muted); }
-.count-label { font-size: 10px; color: var(--muted); }
-
-/* ── Stats ── */
-.stats-wrap { margin-bottom: 14px; }
-.stats { display: flex; flex-wrap: wrap; gap: 6px; }
-.stat-pill { border-radius: 99px; padding: 4px 12px; cursor: pointer; transition: transform .15s; border: 1px solid transparent; display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 600; }
-.stat-pill:active { transform: scale(0.96); }
-.stat-pill.active { border-color: currentColor; }
-.stat-pill .sn { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800; }
-
-.p-target-speed { background: var(--target-speed-bg); color: var(--target-speed); }
-.p-target-power { background: var(--target-power-bg); color: var(--target-power); }
-.p-target-both  { background: var(--target-both-bg);  color: var(--target-both); }
-.p-target-other { background: var(--target-other-bg); color: var(--target-other); }
-.p-arch-t    { background: var(--arch-t-bg);    color: var(--arch-t); }
-.p-arch-ssm  { background: var(--arch-ssm-bg);  color: var(--arch-ssm); }
-.p-arch-rnn  { background: var(--arch-rnn-bg);  color: var(--arch-rnn); }
-.p-arch-cnn  { background: var(--arch-cnn-bg);  color: var(--arch-cnn); }
-.p-arch-gnn  { background: var(--arch-gnn-bg);  color: var(--arch-gnn); }
-.p-arch-mlp  { background: var(--arch-mlp-bg);  color: var(--arch-mlp); }
-.p-arch-hat  { background: var(--arch-hat-bg);  color: var(--arch-hat); }
-.p-arch-dec  { background: var(--arch-dec-bg);  color: var(--arch-dec); }
-.p-arch-ens  { background: var(--arch-ens-bg);  color: var(--arch-ens); }
-.p-arch-est  { background: var(--arch-est-bg);  color: var(--arch-est); }
-.p-arch-prob { background: var(--arch-prob-bg); color: var(--arch-prob); }
-.p-arch-fis  { background: var(--arch-fis-bg);  color: var(--arch-fis); }
-.p-arch-nf   { background: var(--arch-nf-bg);   color: var(--arch-nf); }
-.p-arch-llm  { background: var(--arch-llm-bg);  color: var(--arch-llm); }
-.p-arch-fm   { background: var(--arch-fm-bg);   color: var(--arch-fm); }
-.p-arch-out  { background: var(--arch-out-bg);  color: var(--arch-out); border:1px solid var(--border); }
-.p-task-prev { background: var(--task-prev-bg); color: var(--task-prev); }
-.p-task-otim { background: var(--task-otim-bg); color: var(--task-otim); }
-.p-task-rec  { background: var(--task-rec-bg);  color: var(--task-rec); }
-.p-task-ctrl { background: var(--task-ctrl-bg); color: var(--task-ctrl); }
-.p-task-curv { background: var(--task-curv-bg); color: var(--task-curv); }
-.p-task-anom { background: var(--task-anom-bg); color: var(--task-anom); }
-.p-task-ger  { background: var(--task-ger-bg);  color: var(--task-ger); }
-.p-task-sim  { background: var(--task-sim-bg);  color: var(--task-sim); }
-.p-task-risk { background: var(--task-risk-bg); color: var(--task-risk); }
-.p-task-rev  { background: var(--task-rev-bg);  color: var(--task-rev); }
-.p-task-out  { background: var(--task-out-bg);  color: var(--task-out); border:1px solid var(--border); }
-.p-pending   { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
-
-/* ── Table ── */
-.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-.table-inner { overflow-x: auto; max-height: 50vh; overflow-y: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-thead { position: sticky; top: 0; z-index: 2; }
-th { background: var(--card); padding: 9px 12px; text-align: left; color: var(--muted); font-weight: 500; font-size: 9px; text-transform: uppercase; letter-spacing: .6px; border-bottom: 1px solid var(--border); white-space: nowrap; }
-td { padding: 7px 12px; border-top: 1px solid var(--border); vertical-align: middle; }
-tr:hover td { background: var(--card); }
-.idx { color: var(--muted); font-size: 9px; width: 36px; }
-.title-cell { max-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 28%; color: var(--text); }
-.mono-cell { max-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 10px; }
-.tags-cell { white-space: nowrap; }
-.badge { display: inline-block; border-radius: 99px; padding: 1px 7px; font-size: 9px; font-weight: 600; white-space: nowrap; margin: 1px; }
-.table-footer { padding: 8px 14px; border-top: 1px solid var(--border); color: var(--muted); font-size: 10px; text-align: center; }
-
-/* ── Toast ── */
-.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--danger); color: #fff; border-radius: 8px; padding: 10px 18px; font-size: 12px; font-weight: 600; display: none; z-index: 999; max-width: 88vw; text-align: center; }
-.toast.show { display: block; }
-</style>
-</head>
-<body>
-
-<!-- Modal -->
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <h2>BIIA</h2>
-    <p>BIIA — bibliografia + ia.<br>Cole sua chave Gemini para começar.<br>
-    Acesse <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> → Get API key.</p>
-    <input type="password" id="modal-key" placeholder="AIza..." autocomplete="off">
-    <button class="btn-save" onclick="saveKey()">Entrar</button>
-    <div class="hint">Chave salva apenas neste dispositivo.</div>
-  </div>
-</div>
-
-<header>
-  <div>
-    <div class="logo">BIIA</div>
-    <div class="logo-sub">bibliografia + ia</div>
-  </div>
-  <div class="hdr-right">
-    <span class="hdr-model" id="hdr-model" style="display:none"></span>
-    <span class="hdr-count" id="hdr-count"></span>
-    <button class="btn-sm" onclick="changeKey()">chave</button>
-  </div>
-</header>
-
-<main>
-  <div class="api-bar" id="api-bar">
-    <span class="api-ok">● Gemini conectado</span>
-    <span style="font-size:10px;color:var(--muted);margin-left:4px" id="api-model-label"></span>
-  </div>
-
-  <!-- Drop zone -->
-  <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
-    <input type="file" id="file-input" accept=".csv" style="display:none">
-    <div class="icon">📄</div>
-    <div class="label" id="dz-label">Carregar CSV</div>
-    <div class="hint">Todas as colunas originais são preservadas</div>
-  </div>
-
-  <!-- Column selector -->
-  <div class="section" id="col-section" style="display:none">
-    <div class="section-title">Colunas a classificar</div>
-    <div class="col-grid" id="col-grid"></div>
-    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-      <button class="toggle-preview" onclick="togglePreview()">▶ ver prompt</button>
-      <button class="toggle-preview" style="color:var(--success)" onclick="showPayloadPreview()">▶ ver exemplo real</button>
-    </div>
-    <div class="prompt-preview" id="prompt-preview">
-      <div class="prompt-box" id="prompt-box"></div>
-    </div>
-    <div class="prompt-preview" id="payload-preview">
-      <div class="prompt-box" id="payload-box"></div>
-    </div>
-  </div>
-
-  <!-- Progress -->
-  <div class="progress-wrap" id="progress-wrap">
-    <div class="progress-top">
-      <span id="progress-label">Classificando...</span>
-      <span id="progress-pct">0%</span>
-    </div>
-    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
-    <div class="phase-rows" id="phase-rows" style="display:none">
-      <div class="phase-row" id="phase-row-1" style="display:none">
-        <span class="phase-label" id="phase-label-1">⚡ Fase 1 — regex</span>
-        <div class="phase-bar"><div class="phase-fill phase-fill-2" id="phase-fill-1" style="width:0%"></div></div>
-        <span class="phase-status" id="phase-status-1"></span>
+      /* ── Toast ── */
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--danger);
+        color: #fff;
+        border-radius: 8px;
+        padding: 10px 18px;
+        font-size: 12px;
+        font-weight: 600;
+        display: none;
+        z-index: 999;
+        max-width: 88vw;
+        text-align: center;
+      }
+      .toast.show {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Modal -->
+    <div class="overlay" id="overlay">
+      <div class="modal">
+        <h2>BIIA</h2>
+        <p>
+          BIIA — bibliografia + ia.<br />Cole sua chave Gemini para começar.<br />
+          Acesse
+          <a href="https://aistudio.google.com" target="_blank"
+            >aistudio.google.com</a
+          >
+          → Get API key.
+        </p>
+        <input
+          type="password"
+          id="modal-key"
+          placeholder="AIza..."
+          autocomplete="off"
+        />
+        <button class="btn-save" onclick="saveKey()">Entrar</button>
+        <div class="hint">Chave salva apenas neste dispositivo.</div>
       </div>
-      <div class="phase-row" id="phase-row-2" style="display:none">
-        <span class="phase-label" id="phase-label-2">🤖 Fase 2 — task</span>
-        <div class="phase-bar"><div class="phase-fill phase-fill-2" id="phase-fill-2" style="width:0%"></div></div>
-        <span class="phase-status" id="phase-status-2"></span>
-      </div>
-      <div class="phase-row" id="phase-row-3" style="display:none">
-        <span class="phase-label" id="phase-label-3">🤖 Fase 3 — target</span>
-        <div class="phase-bar"><div class="phase-fill phase-fill-3" id="phase-fill-3" style="width:0%"></div></div>
-        <span class="phase-status" id="phase-status-3"></span>
-      </div>
-      <div class="phase-row" id="phase-row-4" style="display:none">
-        <span class="phase-label" id="phase-label-4">🤖 Fase 4 — arch</span>
-        <div class="phase-bar"><div class="phase-fill phase-fill-4" id="phase-fill-4" style="width:0%"></div></div>
-        <span class="phase-status" id="phase-status-4"></span>
-      </div>
     </div>
-  </div>
 
-  <!-- Stats -->
-  <div class="stats-wrap" id="stats-wrap" style="display:none">
-    <div class="stats" id="stats-pills"></div>
-  </div>
+    <header>
+      <div>
+        <div class="logo">BIIA</div>
+        <div class="logo-sub">bibliografia + ia</div>
+      </div>
+      <div class="hdr-right">
+        <span class="hdr-model" id="hdr-model" style="display: none"></span>
+        <span class="hdr-count" id="hdr-count"></span>
+        <button class="btn-sm" onclick="changeKey()">chave</button>
+      </div>
+    </header>
 
-  <!-- Controls -->
-  <div class="controls" id="controls" style="display:none">
-    <button class="btn btn-start"    id="btn-start"    onclick="startClassification()">▶ Classificar</button>
-    <button class="btn btn-pause"    id="btn-pause"    onclick="pauseClassification()" style="display:none">⏸ Pausar</button>
-    <button class="btn btn-download" id="btn-download" onclick="downloadCSV()" disabled>⬇ CSV</button>
-    <input  class="search" id="search" placeholder="buscar..." oninput="renderTable()">
-    <button class="btn btn-clr"      id="btn-clr"      onclick="clearFilter()" style="display:none">✕</button>
-    <span   class="count-label"     id="visible-count"></span>
-  </div>
+    <main>
+      <div class="api-bar" id="api-bar" style="display: none">
+        <span class="api-ok">● Gemini conectado</span>
+        <span
+          style="font-size: 10px; color: var(--muted); margin-left: 4px"
+          id="api-model-label"
+        ></span>
+      </div>
 
-  <!-- Table -->
-  <div class="table-wrap" id="table-wrap" style="display:none">
-    <div class="table-inner">
-      <table>
-        <thead><tr id="thead-row"></tr></thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
-    <div class="table-footer" id="table-footer" style="display:none"></div>
-  </div>
-</main>
+      <!-- Drop zone -->
+      <div
+        class="dropzone"
+        id="dropzone"
+        onclick="document.getElementById('file-input').click()"
+      >
+        <input
+          type="file"
+          id="file-input"
+          accept=".csv"
+          style="display: none"
+        />
+        <div class="icon">📄</div>
+        <div class="label" id="dz-label">Carregar CSV</div>
+        <div class="hint">Todas as colunas originais são preservadas</div>
+      </div>
 
-<div class="toast" id="toast"></div>
+      <!-- Rules editor -->
+      <div class="section" id="rules-section" style="display: none">
+        <div class="section-title">Regras de inferência</div>
+        <div id="rules-list"></div>
+        <div
+          style="
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+          "
+        >
+          <button class="btn-sm" onclick="addBlankRule()">+ nova regra</button>
+          <button
+            class="btn-sm"
+            id="btn-presets"
+            onclick="togglePresetsPanel()"
+          >
+            sugestões ▾
+          </button>
+          <button class="toggle-preview" onclick="togglePromptPreview()">
+            ▶ ver prompts
+          </button>
+        </div>
+        <div id="presets-panel" style="display: none; margin-top: 12px">
+          <div
+            style="
+              font-size: 9px;
+              color: var(--muted);
+              text-transform: uppercase;
+              letter-spacing: 0.8px;
+              margin-bottom: 8px;
+            "
+          >
+            clique para adicionar
+          </div>
+          <div
+            id="presets-chips"
+            style="display: flex; flex-wrap: wrap; gap: 6px"
+          ></div>
+        </div>
+        <div class="prompt-preview" id="prompt-preview">
+          <div class="prompt-box" id="prompt-box"></div>
+        </div>
+      </div>
 
-<script>
-// ── Constants ──────────────────────────────────────────────────────────────
-const LS_KEY = 'biia_gemini_key';
-const LS_MOD = 'biia_model';
-const BATCH  = 5;
-const GEMINI_MODELS = ['gemini-3.1-flash-lite-preview'];
+      <!-- Progress -->
+      <div class="progress-wrap" id="progress-wrap">
+        <div class="progress-top">
+          <span id="progress-label">Classificando...</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+        <div class="phase-rows" id="phase-rows"></div>
+      </div>
 
-// ── Column definitions ─────────────────────────────────────────────────────
-const COL_DEFS = [
-  { id: 'target',                   label: 'target',                   type: 'closed' },
-  { id: 'architecture',             label: 'architecture',             type: 'multi'  },
-  { id: 'model',                    label: 'model',                    type: 'free'   },
-  { id: 'complementary_technique',  label: 'complementary_technique',  type: 'free'   },
-  { id: 'task',                     label: 'task',                     type: 'closed' },
-];
-// Source tracking columns (not selectable, auto-managed)
-const SOURCE_COLS = ['task_source', 'target_source'];
+      <!-- Stats -->
+      <div class="stats-wrap" id="stats-wrap" style="display: none">
+        <div class="stats" id="stats-pills"></div>
+      </div>
 
-const FILL_MODES = [
-  { value: 'empty',   label: 'Preencher vazios'  },
-  { value: 'all',     label: 'Sobrescrever tudo'  },
-];
+      <!-- Controls -->
+      <div class="controls" id="controls" style="display: none">
+        <button
+          class="btn btn-start"
+          id="btn-start"
+          onclick="startClassification()"
+        >
+          ▶ Classificar
+        </button>
+        <button
+          class="btn btn-pause"
+          id="btn-pause"
+          onclick="pauseClassification()"
+          style="display: none"
+        >
+          ⏸ Pausar
+        </button>
+        <button
+          class="btn btn-download"
+          id="btn-download"
+          onclick="downloadCSV()"
+          disabled
+        >
+          ⬇ CSV
+        </button>
+        <input
+          class="search"
+          id="search"
+          placeholder="buscar..."
+          oninput="renderTable()"
+        />
+        <button
+          class="btn btn-clr"
+          id="btn-clr"
+          onclick="clearFilter()"
+          style="display: none"
+        >
+          ✕
+        </button>
+        <span class="count-label" id="visible-count"></span>
+      </div>
 
-// ── Prompt blocks ──────────────────────────────────────────────────────────
-const PROMPT_BLOCKS = {
-  target: `━━ target ━━
+      <!-- Table -->
+      <div class="table-wrap" id="table-wrap" style="display: none">
+        <div class="table-inner">
+          <table>
+            <thead>
+              <tr id="thead-row"></tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer" id="table-footer" style="display: none"></div>
+      </div>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      // ── Constants ──────────────────────────────────────────────────────────────
+      const LS_KEY = "biia_gemini_key";
+      const LS_MOD = "biia_model";
+      const BATCH = 5;
+      const GEMINI_MODELS = ["gemini-3.1-flash-lite-preview"];
+
+      // ── Preset prompt blocks ───────────────────────────────────────────────────
+      const PROMPT_BLOCKS = {
+        target: `Você é um especialista em ML.
+Analise o título e palavras-chave de cada artigo e classifique o campo abaixo:
+
+━━ target ━━
 Variável alvo do modelo proposto. Siga a HIERARQUIA abaixo em ordem:
-
 1. "velocidade do vento": o modelo tem velocidade do vento como variável de saída
 2. "potência": o modelo tem potência como variável de saída (qualquer fonte: eólica, solar, etc.) e NÃO se enquadra na regra anterior
 3. "outro": outra variável de saída, sem modelo proposto claro, ou não aplicável`,
 
-  architecture: `━━ architecture ━━
+        architecture: `Você é um especialista em ML.
+Analise o título, palavras-chave e abstract de cada artigo e classifique o campo abaixo:
+
+━━ architecture ━━
 Liste as famílias arquiteturais do modelo PROPOSTO. Podem ser MÚLTIPLAS tags separadas por vírgula.
 Use APENAS as opções abaixo — inclua todas que compõem a arquitetura proposta:
 - "Transformer": backbone baseado em atenção (Transformer, Informer, PatchTST, Mamba, Crossformer, Autoformer)
@@ -407,19 +1225,27 @@ Use APENAS as opções abaixo — inclua todas que compõem a arquitetura propos
 - "Físico": puramente físico (NWP, WRF, CFD, LES)
 - "Outro": não classificável (KAN, Diffusion, RL puro, GAM, Quantum NN)
 - "-": sem modelo proposto claro
-REGRAS: Metaheurística e transfer learning NÃO são arquitetura — vão em complementary_technique.
-EXEMPLOS já descritos acima`,
+REGRAS: Metaheurística e transfer learning NÃO são arquitetura — vão em complementary_technique.`,
 
-  model: `━━ model ━━
+        model: `Você é um especialista em ML.
+Analise o título, palavras-chave e abstract de cada artigo e classifique o campo abaixo:
+
+━━ model ━━
 Nome/sigla EXATA do modelo proposto (ex: "DBANN", "CEEMDAN+VMD+GRU", "PINN+Informer").
 Use "-" se não há modelo proposto claro.`,
 
-  complementary_technique: `━━ complementary_technique ━━
+        complementary_technique: `Você é um especialista em ML.
+Analise o título, palavras-chave e abstract de cada artigo e classifique o campo abaixo:
+
+━━ complementary_technique ━━
 Técnicas COMPLEMENTARES à arquitetura: otimização, paradigma de treinamento, estratégia metodológica.
 Exemplos: "PSO", "NSGA-III feature selection", "transfer learning", "federated learning", "meta-learning", "knowledge distillation", "quantile regression", "Monte Carlo".
 Use "-" se não há técnica complementar relevante. Múltiplas separadas por vírgula.`,
 
-  task: `━━ task ━━
+        task: `Você é um especialista em ML.
+Analise o título e palavras-chave de cada artigo e classifique o campo abaixo:
+
+━━ task ━━
 Tarefa principal do artigo. Use EXATAMENTE uma das opções:
 - "previsão": forecasting de velocidade, potência ou variáveis meteorológicas
 - "otimização": scheduling, dispatch, armazenamento, leilão, gestão, feature selection como foco
@@ -432,746 +1258,1074 @@ Tarefa principal do artigo. Use EXATAMENTE uma das opções:
 - "avaliação de risco": risk assessment, uncertainty quantification como foco
 - "revisão": systematic review, survey, benchmark, comparative study
 - "outro": não se encaixa nas anteriores`,
-};
+      };
 
-// ── Color maps ─────────────────────────────────────────────────────────────
-const TARGET_CSS = {
-  'velocidade do vento':'p-target-speed','potência':'p-target-power',
-  'outro':'p-target-other'
-};
-const ARCH_CSS = {
-  'Transformer':'p-arch-t','State Space Model':'p-arch-ssm','Rede Recorrente':'p-arch-rnn',
-  'Rede Convolucional':'p-arch-cnn','Rede de Grafos':'p-arch-gnn','MLP-based':'p-arch-mlp',
-  'Atenção':'p-arch-hat','Decomposição':'p-arch-dec','Ensemble':'p-arch-ens',
-  'Estatístico':'p-arch-est','Probabilístico':'p-arch-prob','Físico':'p-arch-fis',
-  'Neuro-Fuzzy':'p-arch-nf','LLM':'p-arch-llm','Foundation Model':'p-arch-fm',
-  'Outro':'p-arch-out','-':'p-pending'
-};
-const TASK_CSS = {
-  'previsão':'p-task-prev','otimização':'p-task-otim','avaliação de recurso':'p-task-rec',
-  'controle':'p-task-ctrl','modelagem de curva':'p-task-curv','detecção de anomalias':'p-task-anom',
-  'geração de dados':'p-task-ger','simulação física':'p-task-sim','avaliação de risco':'p-task-risk',
-  'revisão':'p-task-rev','outro':'p-task-out'
-};
+      // ── Presets (suggestions) ──────────────────────────────────────────────────
+      const PRESETS = [
+        {
+          id: "target",
+          inputCols: ["Title", "Author Keywords"],
+          method: "regex+ai",
+          regexText: `/wind speed/i → velocidade do vento
+/wind power/i → potência`,
+          prompt: PROMPT_BLOCKS.target,
+        },
+        {
+          id: "task",
+          inputCols: ["Title", "Author Keywords"],
+          method: "regex+ai",
+          regexText: `/systematic review/i → revisão
+/literature survey/i → revisão
+/\bCFD\b/ → simulação física
+/\bLES\b/ → simulação física
+/\bWRF\b/ → simulação física
+/anomaly detection/i → detecção de anomalias
+/fault detection/i → detecção de anomalias
+/fault diagnosis/i → detecção de anomalias
+/data augmentation/i → geração de dados
+/synthetic data/i → geração de dados
+/risk assessment/i → avaliação de risco
+/wake control/i → controle
+/pitch control/i → controle
+/frequency control/i → controle
+/power curve/i → modelagem de curva
+/resource assessment/i → avaliação de recurso
+/wind potential/i → avaliação de recurso
+/\bscheduling\b/i → otimização
+/\bdispatch\b/i → otimização
+/\barbitrage\b/i → otimização
+/unit commitment/i → otimização
+/forecasting/i → previsão
+/prediction/i → previsão`,
+          prompt: PROMPT_BLOCKS.task,
+        },
+        {
+          id: "architecture",
+          inputCols: ["Title", "Abstract", "Author Keywords", "Index Keywords"],
+          method: "ai",
+          regexText: "",
+          prompt: PROMPT_BLOCKS.architecture,
+        },
+        {
+          id: "model",
+          inputCols: ["Title", "Abstract", "Author Keywords", "Index Keywords"],
+          method: "ai",
+          regexText: "",
+          prompt: PROMPT_BLOCKS.model,
+        },
+        {
+          id: "complementary_technique",
+          inputCols: ["Title", "Abstract", "Author Keywords", "Index Keywords"],
+          method: "ai",
+          regexText: "",
+          prompt: PROMPT_BLOCKS.complementary_technique,
+        },
+      ];
 
-// ── State ──────────────────────────────────────────────────────────────────
-let allRows = [], stopFlag = false, activeModel = localStorage.getItem(LS_MOD) || null;
-let activeFilter = { col: null, val: null };
-let colStates = {}; // { colId: { active: bool, mode: 'empty'|'all'|'unclear' } }
-COL_DEFS.forEach(c => colStates[c.id] = { active: ['architecture','model','complementary_technique'].includes(c.id), mode: 'empty' });
+      // ── Color maps (for known preset columns) ─────────────────────────────────
+      const TARGET_CSS = {
+        "velocidade do vento": "p-target-speed",
+        potência: "p-target-power",
+        outro: "p-target-other",
+      };
+      const ARCH_CSS = {
+        Transformer: "p-arch-t",
+        "State Space Model": "p-arch-ssm",
+        "Rede Recorrente": "p-arch-rnn",
+        "Rede Convolucional": "p-arch-cnn",
+        "Rede de Grafos": "p-arch-gnn",
+        "MLP-based": "p-arch-mlp",
+        Atenção: "p-arch-hat",
+        Decomposição: "p-arch-dec",
+        Ensemble: "p-arch-ens",
+        Estatístico: "p-arch-est",
+        Probabilístico: "p-arch-prob",
+        Físico: "p-arch-fis",
+        "Neuro-Fuzzy": "p-arch-nf",
+        LLM: "p-arch-llm",
+        "Foundation Model": "p-arch-fm",
+        Outro: "p-arch-out",
+        "-": "p-pending",
+      };
+      const TASK_CSS = {
+        previsão: "p-task-prev",
+        otimização: "p-task-otim",
+        "avaliação de recurso": "p-task-rec",
+        controle: "p-task-ctrl",
+        "modelagem de curva": "p-task-curv",
+        "detecção de anomalias": "p-task-anom",
+        "geração de dados": "p-task-ger",
+        "simulação física": "p-task-sim",
+        "avaliação de risco": "p-task-risk",
+        revisão: "p-task-rev",
+        outro: "p-task-out",
+      };
 
-// ── API Key ────────────────────────────────────────────────────────────────
-function loadKey() {
-  const k = localStorage.getItem(LS_KEY) || '';
-  // reset cached model so fallback works properly
-  activeModel = null;
-  localStorage.removeItem(LS_MOD);
-  document.getElementById('hdr-model').textContent = 'auto';
-  document.getElementById('api-model-label').textContent = 'detectando modelo...';
-  if (k.startsWith('AIza') && k.length > 20) {
-    document.getElementById('overlay').classList.add('hidden');
-    document.getElementById('api-bar').style.display = 'flex';
-    document.getElementById('hdr-model').style.display = 'inline';
-  } else {
-    document.getElementById('overlay').classList.remove('hidden');
-    document.getElementById('api-bar').style.display = 'none';
-  }
-}
-function saveKey() {
-  const k = document.getElementById('modal-key').value.trim();
-  if (!k.startsWith('AIza') || k.length < 20) { showToast('Chave inválida.'); return; }
-  localStorage.setItem(LS_KEY, k);
-  document.getElementById('overlay').classList.add('hidden');
-  document.getElementById('api-bar').style.display = 'flex';
-  document.getElementById('hdr-model').style.display = 'inline';
-}
-function changeKey() { document.getElementById('modal-key').value = ''; document.getElementById('overlay').classList.remove('hidden'); }
-document.getElementById('modal-key').addEventListener('keydown', e => { if (e.key === 'Enter') saveKey(); });
-loadKey();
+      function badgeCss(colId, value) {
+        if (colId === "target") return TARGET_CSS[value] || "p-pending";
+        if (colId === "task") return TASK_CSS[value] || "p-task-out";
+        if (colId === "architecture") return ARCH_CSS[value] || "p-arch-out";
+        return "p-custom";
+      }
 
-// ── Column selector UI ─────────────────────────────────────────────────────
-function buildColSelector() {
-  const grid = document.getElementById('col-grid');
+      // ── State ──────────────────────────────────────────────────────────────────
+      let allRows = [],
+        stopFlag = false;
+      let activeModel = localStorage.getItem(LS_MOD) || null;
+      let activeFilter = { col: null, val: null };
+      let userRules = [];
+      let csvHeaders = [];
+      let presetsOpen = false,
+        promptPreviewOpen = false,
+        pendingExpand = -1;
 
-  function colHTML(c) {
-    return `<div class="col-item ${colStates[c.id].active ? 'active' : ''}" id="ci-${c.id}" onclick="toggleColItem('${c.id}')">
-      <div class="col-item-header">
-        <span class="col-name">${c.label}</span>
-        <div class="col-toggle"></div>
+      // ── API Key ────────────────────────────────────────────────────────────────
+      function loadKey() {
+        activeModel = null;
+        localStorage.removeItem(LS_MOD);
+        document.getElementById("hdr-model").textContent = "auto";
+        document.getElementById("api-model-label").textContent =
+          "detectando modelo...";
+        const k = localStorage.getItem(LS_KEY) || "";
+        if (k.startsWith("AIza") && k.length > 20) {
+          document.getElementById("overlay").classList.add("hidden");
+          document.getElementById("api-bar").style.display = "flex";
+          document.getElementById("hdr-model").style.display = "inline";
+        } else {
+          document.getElementById("overlay").classList.remove("hidden");
+          document.getElementById("api-bar").style.display = "none";
+        }
+      }
+      function saveKey() {
+        const k = document.getElementById("modal-key").value.trim();
+        if (!k.startsWith("AIza") || k.length < 20) {
+          showToast("Chave inválida.");
+          return;
+        }
+        localStorage.setItem(LS_KEY, k);
+        document.getElementById("overlay").classList.add("hidden");
+        document.getElementById("api-bar").style.display = "flex";
+        document.getElementById("hdr-model").style.display = "inline";
+      }
+      function changeKey() {
+        document.getElementById("modal-key").value = "";
+        document.getElementById("overlay").classList.remove("hidden");
+      }
+      document.getElementById("modal-key").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") saveKey();
+      });
+      loadKey();
+
+      // ── Rule factory ───────────────────────────────────────────────────────────
+      function makeRule(overrides = {}) {
+        return {
+          id: "",
+          active: true,
+          mode: "empty",
+          inputCols: [],
+          method: "ai",
+          regexText: "",
+          prompt: "",
+          ...overrides,
+        };
+      }
+
+      // ── Rule management ────────────────────────────────────────────────────────
+      function addPreset(presetId) {
+        const p = PRESETS.find((p) => p.id === presetId);
+        if (!p) return;
+        if (userRules.some((r) => r.id === presetId)) {
+          showToast(`Regra "${presetId}" já adicionada.`);
+          return;
+        }
+        const validCols = csvHeaders.length
+          ? p.inputCols.filter((c) => csvHeaders.includes(c))
+          : p.inputCols;
+        userRules.push(
+          makeRule({
+            id: p.id,
+            inputCols: validCols.length ? validCols : p.inputCols,
+            method: p.method,
+            regexText: p.regexText,
+            prompt: p.prompt,
+          }),
+        );
+        ensureRuleColumns();
+        buildRulesUI();
+        if (allRows.length) {
+          updateStats();
+          renderTable();
+          updateTableHeader();
+        }
+      }
+
+      function addBlankRule() {
+        userRules.push(makeRule({ inputCols: csvHeaders.slice(0, 1) }));
+        pendingExpand = userRules.length - 1;
+        buildRulesUI();
+      }
+
+      function removeRule(idx) {
+        userRules.splice(idx, 1);
+        buildRulesUI();
+        if (allRows.length) {
+          updateStats();
+          renderTable();
+          updateTableHeader();
+        }
+      }
+
+      function toggleRuleActive(idx, e) {
+        e.stopPropagation();
+        userRules[idx].active = !userRules[idx].active;
+        buildRulesUI();
+        if (allRows.length) {
+          updateStats();
+          renderTable();
+          updateTableHeader();
+        }
+      }
+
+      function setRuleMethod(idx, method) {
+        const wasOpen = document
+          .getElementById(`rule-body-${idx}`)
+          ?.classList.contains("open");
+        userRules[idx].method = method;
+        buildRulesUI();
+        if (wasOpen) {
+          const body = document.getElementById(`rule-body-${idx}`);
+          const icon = document.getElementById(`rule-expand-icon-${idx}`);
+          if (body) body.classList.add("open");
+          if (icon) icon.textContent = "▾";
+        }
+      }
+
+      function toggleInputCol(idx, col) {
+        const r = userRules[idx];
+        const i = r.inputCols.indexOf(col);
+        if (i === -1) r.inputCols.push(col);
+        else r.inputCols.splice(i, 1);
+        // Update chip classes without full re-render
+        const grid = document.querySelector(
+          `#rule-body-${idx} .rule-cols-grid`,
+        );
+        if (grid) {
+          grid.querySelectorAll(".col-chip").forEach((chip) => {
+            chip.classList.toggle(
+              "selected",
+              r.inputCols.includes(chip.dataset.col),
+            );
+          });
+        }
+      }
+
+      // ── Rules UI ───────────────────────────────────────────────────────────────
+      function togglePresetsPanel() {
+        presetsOpen = !presetsOpen;
+        document.getElementById("presets-panel").style.display = presetsOpen
+          ? "block"
+          : "none";
+        document.getElementById("btn-presets").textContent = presetsOpen
+          ? "sugestões ▴"
+          : "sugestões ▾";
+        if (presetsOpen) buildPresetsChips();
+      }
+
+      function buildPresetsChips() {
+        const existingIds = new Set(userRules.map((r) => r.id));
+        document.getElementById("presets-chips").innerHTML = PRESETS.map(
+          (p) =>
+            `<button class="preset-chip" ${existingIds.has(p.id) ? "disabled" : ""} onclick="addPreset('${p.id}')">${p.id}</button>`,
+        ).join("");
+      }
+
+      function togglePromptPreview() {
+        promptPreviewOpen = !promptPreviewOpen;
+        document
+          .getElementById("prompt-preview")
+          .classList.toggle("show", promptPreviewOpen);
+        if (promptPreviewOpen) updatePromptPreview();
+      }
+
+      function updatePromptPreview() {
+        const active = userRules.filter((r) => r.active && r.prompt);
+        document.getElementById("prompt-box").textContent = active.length
+          ? active
+              .map((r) => `── ${r.id || "(sem nome)"} ──\n${r.prompt}`)
+              .join("\n\n")
+          : "Nenhuma regra com prompt definido.";
+      }
+
+      function renderRuleCard(r, i) {
+        const mbClass =
+          { regex: "badge-regex", ai: "badge-ai", "regex+ai": "badge-both" }[
+            r.method
+          ] || "";
+        const mbLabel =
+          { regex: "⚡ regex", ai: "🤖 IA", "regex+ai": "⚡+🤖 regex+IA" }[
+            r.method
+          ] || r.method;
+        const showRegex = r.method === "regex" || r.method === "regex+ai";
+        const showAI = r.method === "ai" || r.method === "regex+ai";
+
+        const colChips = csvHeaders.length
+          ? csvHeaders
+              .map(
+                (col) =>
+                  `<span class="col-chip ${r.inputCols.includes(col) ? "selected" : ""}" data-col="${esc(col)}" onclick="toggleInputCol(${i},'${col.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}')">` +
+                  `${esc(col)}</span>`,
+              )
+              .join("")
+          : '<span style="font-size:10px;color:var(--muted)">carregue um CSV primeiro</span>';
+
+        return `<div class="rule-card ${r.active ? "active-rule" : ""}" id="rule-card-${i}">
+  <div class="rule-header" onclick="toggleRuleExpand(${i})">
+    <span class="rule-expand-icon" id="rule-expand-icon-${i}">▸</span>
+    <span class="rule-name">${esc(r.id || "(sem nome)")}</span>
+    <span class="rule-method-badge ${mbClass}">${mbLabel}</span>
+    <div class="rule-toggle" onclick="toggleRuleActive(${i},event)"></div>
+    <button class="rule-del" onclick="event.stopPropagation();removeRule(${i})">×</button>
+  </div>
+  <div class="rule-body" id="rule-body-${i}">
+    <div class="rule-body-inner">
+      <div>
+        <div class="rule-field-label">Nome da coluna de saída</div>
+        <input class="rule-input" id="rule-id-${i}" value="${esc(r.id)}" placeholder="ex: categoria, metodo..." />
       </div>
-      <select class="col-mode" id="cm-${c.id}" onclick="event.stopPropagation()" onchange="colStates['${c.id}'].mode=this.value;updatePromptPreview()">
-        ${FILL_MODES.map(m => `<option value="${m.value}" ${colStates[c.id].mode===m.value?'selected':''}>${m.label}</option>`).join('')}
-      </select>
-    </div>`;
-  }
+      <div>
+        <div class="rule-field-label">Modo de preenchimento</div>
+        <select class="mode-select" onchange="userRules[${i}].mode=this.value">
+          <option value="empty" ${r.mode === "empty" ? "selected" : ""}>Preencher apenas vazios</option>
+          <option value="all" ${r.mode === "all" ? "selected" : ""}>Sobrescrever tudo</option>
+        </select>
+      </div>
+      <div>
+        <div class="rule-field-label">Colunas de entrada do CSV</div>
+        <div class="rule-cols-grid">${colChips}</div>
+      </div>
+      <div>
+        <div class="rule-field-label">Método</div>
+        <div class="method-tabs">
+          <button class="method-tab ${r.method === "regex" ? "active" : ""}" onclick="setRuleMethod(${i},'regex')">⚡ Regex</button>
+          <button class="method-tab ${r.method === "ai" ? "active" : ""}" onclick="setRuleMethod(${i},'ai')">🤖 IA</button>
+          <button class="method-tab ${r.method === "regex+ai" ? "active" : ""}" onclick="setRuleMethod(${i},'regex+ai')">⚡+🤖 Regex+IA</button>
+        </div>
+      </div>
+      ${
+        showRegex
+          ? `<div>
+        <div class="rule-field-label">Padrões regex — um por linha: <code style="color:var(--accent)">/padrão/flags → valor</code></div>
+        <textarea class="rule-textarea" id="rule-regex-${i}" rows="6" placeholder="/wind speed/i → velocidade do vento">${esc(r.regexText)}</textarea>
+      </div>`
+          : ""
+      }
+      ${
+        showAI
+          ? `<div>
+        <div class="rule-field-label">Prompt para IA</div>
+        <textarea class="rule-textarea" id="rule-prompt-${i}" rows="7" placeholder="Instruções para o modelo classificar o campo...">${esc(r.prompt)}</textarea>
+      </div>`
+          : ""
+      }
+    </div>
+  </div>
+</div>`;
+      }
 
-  const phase1Cols = COL_DEFS.filter(c => ['target','task'].includes(c.id));
-  const phase3Cols = COL_DEFS.filter(c => ['architecture','model','complementary_technique'].includes(c.id));
+      function buildRulesUI() {
+        const list = document.getElementById("rules-list");
+        if (!userRules.length) {
+          list.innerHTML =
+            '<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px 0">Nenhuma regra definida. Use "+ nova regra" ou "sugestões".</div>';
+        } else {
+          list.innerHTML = userRules
+            .map((r, i) => renderRuleCard(r, i))
+            .join("");
+          // Attach textarea input listeners
+          userRules.forEach((r, i) => {
+            const idEl = document.getElementById(`rule-id-${i}`);
+            if (idEl)
+              idEl.addEventListener("input", (e) => {
+                userRules[i].id = e.target.value.trim();
+              });
+            const rEl = document.getElementById(`rule-regex-${i}`);
+            if (rEl)
+              rEl.addEventListener("input", (e) => {
+                userRules[i].regexText = e.target.value;
+              });
+            const pEl = document.getElementById(`rule-prompt-${i}`);
+            if (pEl)
+              pEl.addEventListener("input", (e) => {
+                userRules[i].prompt = e.target.value;
+              });
+          });
+          // Auto-expand pending new card
+          if (pendingExpand >= 0) {
+            const body = document.getElementById(`rule-body-${pendingExpand}`);
+            const icon = document.getElementById(
+              `rule-expand-icon-${pendingExpand}`,
+            );
+            if (body) body.classList.add("open");
+            if (icon) icon.textContent = "▾";
+            pendingExpand = -1;
+          }
+        }
+        if (presetsOpen) buildPresetsChips();
+        if (promptPreviewOpen) updatePromptPreview();
+      }
 
-  grid.innerHTML = `
-    <div style="grid-column:1/-1;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">⚡ regex + api</div>
-    ${phase1Cols.map(colHTML).join('')}
-    <div style="grid-column:1/-1;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:8px 0 2px">🤖 api</div>
-    ${phase3Cols.map(colHTML).join('')}
-  `;
-  updatePromptPreview();
-}
+      function toggleRuleExpand(i) {
+        const body = document.getElementById(`rule-body-${i}`);
+        const icon = document.getElementById(`rule-expand-icon-${i}`);
+        const open = body.classList.toggle("open");
+        if (icon) icon.textContent = open ? "▾" : "▸";
+      }
 
-function toggleColItem(id) {
-  colStates[id].active = !colStates[id].active;
-  const el = document.getElementById(`ci-${id}`);
-  el.classList.toggle('active', colStates[id].active);
-  updatePromptPreview();
-  if (payloadOpen) refreshPayloadPreview();
-  if (allRows.length) { updateStats(); renderTable(); updateTableHeader(); }
-}
+      // ── CSV ────────────────────────────────────────────────────────────────────
+      function parseCSV(text) {
+        const lines = text.split(/\r?\n/),
+          headers = parseLine(lines[0]),
+          rows = [];
+        for (let i = 1; i < lines.length; i++) {
+          if (!lines[i].trim()) continue;
+          const cols = parseLine(lines[i]),
+            row = {};
+          headers.forEach((h, j) => (row[h.trim()] = cols[j] || ""));
+          rows.push(row);
+        }
+        return rows;
+      }
+      function parseLine(line) {
+        const r = [];
+        let cur = "",
+          q = false,
+          i = 0;
+        while (i < line.length) {
+          if (q) {
+            if (line[i] === '"' && line[i + 1] === '"') {
+              cur += '"';
+              i += 2;
+            } else if (line[i] === '"') {
+              q = false;
+              i++;
+            } else {
+              cur += line[i];
+              i++;
+            }
+          } else {
+            if (line[i] === '"') {
+              q = true;
+              i++;
+            } else if (line[i] === ",") {
+              r.push(cur.trim());
+              cur = "";
+              i++;
+            } else {
+              cur += line[i];
+              i++;
+            }
+          }
+        }
+        r.push(cur.trim());
+        return r;
+      }
 
-// ── Prompt preview ─────────────────────────────────────────────────────────
-let previewOpen = false, payloadOpen = false;
-function togglePreview() {
-  previewOpen = !previewOpen;
-  document.getElementById('prompt-preview').classList.toggle('show', previewOpen);
-  if (previewOpen) updatePromptPreview();
-}
+      function ensureRuleColumns() {
+        userRules.forEach((r) => {
+          if (!r.id) return;
+          allRows.forEach((row) => {
+            if (!(r.id in row)) row[r.id] = "";
+            if (!(`${r.id}_source` in row)) row[`${r.id}_source`] = "";
+          });
+        });
+      }
 
-function refreshPayloadPreview() {
-  if (!allRows.length) {
-    document.getElementById('payload-box').textContent = 'Carregue um CSV primeiro.';
-    return;
-  }
-  const activeCols = COL_DEFS.filter(c => colStates[c.id].active);
-  if (!activeCols.length) {
-    document.getElementById('payload-box').textContent = 'Selecione pelo menos uma coluna.';
-    return;
-  }
-  const sample  = [allRows[0]];
-  const r        = allRows[0];
-  const title    = r.Title||r.title||'';
-  const kw1      = r['Author Keywords']||'-';
-  const kw2      = r['Index Keywords']||'-';
+      function onCSVLoad(rows, filename) {
+        allRows = rows;
+        csvHeaders = Object.keys(rows[0] || {});
+        ensureRuleColumns();
+        document.getElementById("dz-label").textContent =
+          `✅ ${allRows.length} artigos — ${filename}`;
+        document.getElementById("hdr-count").textContent =
+          `${allRows.length} artigos`;
+        document.getElementById("rules-section").style.display = "block";
+        document.getElementById("stats-wrap").style.display = "block";
+        document.getElementById("controls").style.display = "flex";
+        document.getElementById("table-wrap").style.display = "block";
+        buildRulesUI();
+        updateTableHeader();
+        updateStats();
+        renderTable();
+      }
 
-  const taskCols_p   = activeCols.filter(c => c.id === 'task');
-  const targetCols_p = activeCols.filter(c => c.id === 'target');
-  const archCols_p   = activeCols.filter(c => ['architecture','model','complementary_technique'].includes(c.id));
-  const hasRegex     = taskCols_p.length > 0 || targetCols_p.length > 0;
+      document.getElementById("file-input").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) =>
+          onCSVLoad(parseCSV(ev.target.result), file.name);
+        reader.readAsText(file, "utf-8");
+      });
 
-  let output = '';
+      const dz = document.getElementById("dropzone");
+      dz.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dz.classList.add("active");
+      });
+      dz.addEventListener("dragleave", () => dz.classList.remove("active"));
+      dz.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dz.classList.remove("active");
+        const file = e.dataTransfer.files[0];
+        if (file?.name.endsWith(".csv")) {
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          document.getElementById("file-input").files = dt.files;
+          document
+            .getElementById("file-input")
+            .dispatchEvent(new Event("change"));
+        }
+      });
 
-  // Fase 1
-  if (hasRegex) {
-    const regexFields = [...taskCols_p, ...targetCols_p].map(c=>c.id).join(', ');
-    output += `⚡ FASE 1 — Regex (sem API)\n`;
-    output += `Campos: ${regexFields} · instantâneo\n`;
-    output += `Texto buscado (título + keywords do artigo 0):\n`;
-    output += `  Título: ${title}\n`;
-    output += `  Author Keywords: ${kw1}\n`;
-    output += `  Index Keywords: ${kw2}\n`;
-    output += `\n${'─'.repeat(60)}\n\n`;
-  }
+      // ── Regex engine ───────────────────────────────────────────────────────────
+      function parseRegexLines(text) {
+        return text
+          .split("\n")
+          .map((l) => l.trim())
+          .filter((l) => l && !l.startsWith("#"))
+          .map((l) => {
+            const arrow = l.lastIndexOf(" → ");
+            if (arrow === -1) return null;
+            const patStr = l.slice(0, arrow).trim();
+            const value = l.slice(arrow + 3).trim();
+            const m = patStr.match(/^\/(.+)\/([gimsuy]*)$/);
+            if (!m) return null;
+            try {
+              return { regex: new RegExp(m[1], m[2] || "i"), value };
+            } catch {
+              return null;
+            }
+          })
+          .filter(Boolean);
+      }
 
-  // Fase 2: task
-  if (taskCols_p.length) {
-    output += `🤖 FASE 2 — API · task · paralelo com Fases 3 e 4\n`;
-    output += `Lotes de 5 artigos · 6s entre lotes\n`;
-    output += `Apenas artigos onde regex não encontrou match (campo vazio)\n\n`;
-    output += buildPrompt(sample, taskCols_p);
-    output += `\n\n${'─'.repeat(60)}\n\n`;
-  }
+      function applyRuleRegex(row, rule) {
+        const text = rule.inputCols.map((col) => row[col] || "").join(" ");
+        for (const { regex, value } of parseRegexLines(rule.regexText)) {
+          if (regex.test(text)) return value;
+        }
+        return null;
+      }
 
-  // Fase 3: target
-  if (targetCols_p.length) {
-    output += `🤖 FASE 3 — API · target · paralelo com Fases 2 e 4\n`;
-    output += `Lotes de 5 artigos · 6s entre lotes\n`;
-    output += `Apenas artigos onde regex não encontrou match (campo vazio)\n\n`;
-    output += buildPrompt(sample, targetCols_p);
-    output += `\n\n${'─'.repeat(60)}\n\n`;
-  }
+      // ── Prompt builder ─────────────────────────────────────────────────────────
+      function buildPromptForRule(batch, rule) {
+        const articles = batch
+          .map((r, j) => {
+            const fields = rule.inputCols
+              .map((col) => `${col}: ${r[col] || "-"}`)
+              .join("\n");
+            return `[${j}]\n${fields}`;
+          })
+          .join("\n\n---\n\n");
 
-  // Fase 4: arch
-  if (archCols_p.length) {
-    output += `🤖 FASE 4 — API · ${archCols_p.map(c=>c.id).join(', ')} · paralelo com Fases 2 e 3\n`;
-    output += `Lotes de 5 artigos · 6s entre lotes\n\n`;
-    output += buildPrompt(sample, archCols_p);
-  }
-
-  if (!output) output = 'Nenhuma coluna selecionada requer payload.';
-  document.getElementById('payload-box').textContent = output;
-}
-
-function showPayloadPreview() {
-  payloadOpen = !payloadOpen;
-  const el = document.getElementById('payload-preview');
-  el.classList.toggle('show', payloadOpen);
-  if (!payloadOpen) return;
-  refreshPayloadPreview();
-}
-
-function getSystemPromptBase(activeCols) {
-  const blocks = activeCols.map(c => PROMPT_BLOCKS[c.id]).join('\n\n');
-  
-  return `Você é um especialista em ML.
-Analise o título, palavras-chaves e o abstract COMPLETO de cada artigo e classifique os campos abaixo:
-
-${blocks}`;
-}
-
-function updatePromptPreview() {
-  const activeCols = COL_DEFS.filter(c => colStates[c.id].active);
-  if (!activeCols.length) {
-    document.getElementById('prompt-box').textContent = 'Nenhuma coluna selecionada.';
-    return;
-  }
-
-  const systemBase = getSystemPromptBase(activeCols);
-  const formatEx = activeCols.map(c => `"${c.id}":"..."`).join(', ');
-
-  const preview = `${systemBase}\n\n[Formato JSON]\n[{"index":0,${formatEx}}, ...]`;
-  document.getElementById('prompt-box').textContent = preview;
-}
-
-// ── CSV ────────────────────────────────────────────────────────────────────
-function parseCSV(text) {
-  const lines = text.split(/\r?\n/), headers = parseLine(lines[0]), rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    if (!lines[i].trim()) continue;
-    const cols = parseLine(lines[i]), row = {};
-    headers.forEach((h, j) => row[h.trim()] = cols[j] || '');
-    rows.push(row);
-  }
-  return rows;
-}
-function parseLine(line) {
-  const r = []; let cur = '', q = false, i = 0;
-  while (i < line.length) {
-    if (q) {
-      if (line[i]==='"' && line[i+1]==='"') { cur+='"'; i+=2; } // escaped quote
-      else if (line[i]==='"') { q=false; i++; }                 // closing quote
-      else { cur+=line[i]; i++; }
-    } else {
-      if (line[i]==='"') { q=true; i++; }                       // opening quote
-      else if (line[i]===',') { r.push(cur.trim()); cur=''; i++; } // field separator
-      else { cur+=line[i]; i++; }
-    }
-  }
-  r.push(cur.trim()); return r;
-}
-
-document.getElementById('file-input').addEventListener('change', e => {
-  const file = e.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const parsed = parseCSV(ev.target.result);
-    allRows = parsed.map(r => {
-      const row = { ...r };
-      COL_DEFS.forEach(c => { if (!(c.id in row)) row[c.id] = ''; });
-      SOURCE_COLS.forEach(s => { if (!(s in row)) row[s] = ''; });
-      return row;
-    });
-    document.getElementById('dz-label').textContent = `✅ ${allRows.length} artigos — ${file.name}`;
-    document.getElementById('hdr-count').textContent = `${allRows.length} artigos`;
-    document.getElementById('col-section').style.display = 'block';
-    document.getElementById('stats-wrap').style.display = 'block';
-    document.getElementById('controls').style.display = 'flex';
-    document.getElementById('table-wrap').style.display = 'block';
-    buildColSelector();
-    updateTableHeader();
-    updateStats();
-    renderTable();
-  };
-  reader.readAsText(file, 'utf-8');
-});
-
-const dz = document.getElementById('dropzone');
-dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('active'); });
-dz.addEventListener('dragleave', () => dz.classList.remove('active'));
-dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('active');
-  const file = e.dataTransfer.files[0];
-  if (file?.name.endsWith('.csv')) {
-    const dt = new DataTransfer(); dt.items.add(file);
-    document.getElementById('file-input').files = dt.files;
-    document.getElementById('file-input').dispatchEvent(new Event('change'));
-  }
-});
-
-// ── Needs classification check ─────────────────────────────────────────────
-function needsClassification(row, col, mode) {
-  const val = (row[col] || '').trim();
-  if (mode === 'all') return true;
-  return val === '' || val === null;
-}
-
-// ── Regex classification ───────────────────────────────────────────────────
-const TASK_RULES = [
-  { task: 'revisão',               patterns: [/systematic review/i, /literature survey/i] },
-  { task: 'simulação física',      patterns: [/\bCFD\b/, /\bLES\b/, /\bWRF\b/] },
-  { task: 'detecção de anomalias', patterns: [/anomaly detection/i, /fault detection/i, /fault diagnosis/i] },
-  { task: 'geração de dados',      patterns: [/data augmentation/i, /synthetic data/i] },
-  { task: 'avaliação de risco',    patterns: [/risk assessment/i] },
-  { task: 'controle',              patterns: [/wake control/i, /pitch control/i, /frequency control/i] },
-  { task: 'modelagem de curva',    patterns: [/power curve/i] },
-  { task: 'avaliação de recurso',  patterns: [/resource assessment/i, /wind potential/i] },
-  { task: 'otimização',            patterns: [/\bscheduling\b/i, /\bdispatch\b/i, /\barbitrage\b/i, /unit commitment/i] },
-];
-const TASK_FORECAST_PATTERNS = [/forecasting/i, /prediction/i];
-
-const TARGET_RULES = [
-  { target: 'velocidade do vento', patterns: [/wind speed/i] },
-  { target: 'potência',            patterns: [/wind power/i] },
-];
-
-function applyRegex(row) {
-  const title = row.Title || row.title || '';
-  const authorKeywords = row['Author Keywords'] || '';
-  const text = `${title} ${authorKeywords}`;
-
-  const result    = {};
-
-  // task
-  let taskMatch = null;
-  for (const rule of TASK_RULES) {
-    if (rule.patterns.some(p => p.test(text))) { taskMatch = rule.task; break; }
-  }
-  if (!taskMatch && TASK_FORECAST_PATTERNS.some(p => p.test(text))) {
-    taskMatch = 'previsão';
-  }
-  result.task = taskMatch || null;  // null = no match, send to API
-
-  // target
-  let targetMatch = null;
-  for (const rule of TARGET_RULES) {
-    if (rule.patterns.some(p => p.test(text))) { targetMatch = rule.target; break; }
-  }
-  result.target = targetMatch || null;  // null = no match, send to API
-
-  return result;
-}
-
-// ── Regex classification ───────────────────────────────────────────────────
-// ── Prompt builder ─────────────────────────────────────────────────────────
-function buildPrompt(batch, activeCols) {
-  const systemBase = getSystemPromptBase(activeCols);
-  
-  const formatEx = activeCols.map(c => {
-    const ex = { target:'"potência"', architecture:'"Rede Neural, GNN"', model:'"CEEMDAN+GRU"', complementary_technique:'"PSO"', task:'"previsão"' };
-    return `"${c.id}":${ex[c.id] || '"-"'}`;
-  }).join(',');
-
-  const articles = batch.map((r, j) => 
-    `[${j}] Título: ${r.Title || r.title || ''}\nAbstract: ${r.Abstract || r.abstract || ''}\nAuthor Keywords: ${r['Author Keywords'] || '-'}\nIndex Keywords: ${r['Index Keywords'] || '-'}`
-  ).join('\n\n---\n\n');
-
-  return `${systemBase}
+        return `${rule.prompt}
 
 Responda APENAS com JSON válido, sem markdown:
-[{"index":0,${formatEx}}]
+[{"index":0,"${rule.id}":"..."}]
 
 Artigos:
 ${articles}`;
-}
+      }
 
-// ── Gemini ─────────────────────────────────────────────────────────────────
-async function tryModel(model, key, body) {
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
-    { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-  if (!res.ok) { const e = await res.json(); throw new Error(e?.error?.message || `Erro ${res.status}`); }
-  return res.json();
-}
+      // ── Gemini ─────────────────────────────────────────────────────────────────
+      async function tryModel(model, key, body) {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          },
+        );
+        if (!res.ok) {
+          const e = await res.json();
+          throw new Error(e?.error?.message || `Erro ${res.status}`);
+        }
+        return res.json();
+      }
 
-async function classifyBatch(batchItems, activeCols) {
-  const key = localStorage.getItem(LS_KEY) || '';
-  const batch = batchItems.map(item => item.row);
-  const prompt = buildPrompt(batch, activeCols);
-  const body = { contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0, maxOutputTokens:2048} };
-  let data;
-  if (activeModel) {
-    data = await tryModel(activeModel, key, body);
-  } else {
-    let lastErr = '';
-    for (const m of GEMINI_MODELS) {
-      try {
-        document.getElementById('progress-label').textContent = `Testando ${m}…`;
-        data = await tryModel(m, key, body);
-        activeModel = m;
-        localStorage.setItem(LS_MOD, m);
-        document.getElementById('hdr-model').textContent = m;
-        document.getElementById('hdr-model').style.display = 'inline';
-        document.getElementById('api-model-label').textContent = m;
-        break;
-      } catch(e) { lastErr = e.message; continue; }
-    }
-    if (!data) throw new Error(`Nenhum modelo disponível. Último erro: ${lastErr}`);
-  }
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
-  const clean = text.replace(/```json|```/g,'').trim();
+      async function classifyBatchForRule(batchItems, rule) {
+        const key = localStorage.getItem(LS_KEY) || "";
+        const prompt = buildPromptForRule(
+          batchItems.map((it) => it.row),
+          rule,
+        );
+        const body = {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0, maxOutputTokens: 2048 },
+        };
+        let data;
+        if (activeModel) {
+          data = await tryModel(activeModel, key, body);
+        } else {
+          let lastErr = "";
+          for (const m of GEMINI_MODELS) {
+            try {
+              document.getElementById("progress-label").textContent =
+                `Testando ${m}…`;
+              data = await tryModel(m, key, body);
+              activeModel = m;
+              localStorage.setItem(LS_MOD, m);
+              document.getElementById("hdr-model").textContent = m;
+              document.getElementById("hdr-model").style.display = "inline";
+              document.getElementById("api-model-label").textContent = m;
+              break;
+            } catch (e) {
+              lastErr = e.message;
+            }
+          }
+          if (!data)
+            throw new Error(
+              `Nenhum modelo disponível. Último erro: ${lastErr}`,
+            );
+        }
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
+        const clean = text.replace(/```json|```/g, "").trim();
+        let parsed = [];
+        try {
+          parsed = JSON.parse(clean);
+        } catch {
+          const matches =
+            clean.match(/\{[^{}]*"index"\s*:\s*\d+[^{}]*\}/g) || [];
+          matches.forEach((m) => {
+            try {
+              parsed.push(JSON.parse(m.replace(/[\u0000-\u001F\u007F]/g, " ")));
+            } catch {}
+          });
+        }
+        parsed.forEach((r) => {
+          const item = batchItems[r.index];
+          if (item && r[rule.id] !== undefined) {
+            allRows[item.globalIdx][rule.id] = r[rule.id];
+            allRows[item.globalIdx][`${rule.id}_source`] = "ai";
+          }
+        });
+      }
 
-  let parsed = [];
-  try {
-    parsed = JSON.parse(clean);
-  } catch(e) {
-    // fallback: extract individual objects via regex
-    const matches = clean.match(/\{[^{}]*"index"\s*:\s*\d+[^{}]*\}/g) || [];
-    matches.forEach(m => {
-      try {
-        const safe = m.replace(/[\u0000-\u001F\u007F]/g, ' ');
-        parsed.push(JSON.parse(safe));
-      } catch(_) {}
-    });
-    if (parsed.length === 0) {
-      console.warn('JSON parse failed, skipping batch:', e.message);
-      return;
-    }
-  }
-
-  parsed.forEach(r => {
-    const item = batchItems[r.index];
-    if (item) {
-      activeCols.forEach(c => {
-        if (r[c.id] !== undefined) {
-          allRows[item.globalIdx][c.id] = r[c.id];
-          if (['task','target'].includes(c.id) && r[c.id] !== '') {
-            allRows[item.globalIdx][`${c.id}_source`] = 'ai';
+      // ── Classification ─────────────────────────────────────────────────────────
+      async function runWithBackoff(fn, phaseId) {
+        let attempts = 0;
+        while (true) {
+          if (stopFlag) break;
+          try {
+            await fn();
+            return;
+          } catch {
+            attempts++;
+            const waitMin = attempts <= 3 ? 2 : 5;
+            for (let t = waitMin * 60; t > 0; t--) {
+              if (stopFlag) break;
+              setPhaseStatus(
+                phaseId,
+                `⚠️ tentativa ${attempts} · ${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`,
+              );
+              await sleep(1000);
+            }
           }
         }
-      });
-    }
-  });
-}
-
-// ── Classification ─────────────────────────────────────────────────────────
-async function runWithBackoff(fn, phaseNum, total, done) {
-  let attempts = 0;
-  while (true) {
-    if (stopFlag) break;
-    try {
-      await fn();
-      return;
-    } catch(e) {
-      attempts++;
-      const waitMin = attempts <= 3 ? 2 : 5;
-      for (let t = waitMin * 60; t > 0; t--) {
-        if (stopFlag) break;
-        const countdown = `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`;
-        setPhaseStatus(phaseNum, `⚠️ tentativa ${attempts} · ${countdown}`);
-        await sleep(1000);
       }
-    }
-  }
-}
 
-function setPhaseStatus(num, status) {
-  const el = document.getElementById(`phase-status-${num}`);
-  if (el) el.textContent = status;
-}
+      function setPhaseStatus(phaseId, text) {
+        const el = document.getElementById(`phase-status-${phaseId}`);
+        if (el) el.textContent = text;
+      }
+      function setPhaseProgress(phaseId, done, total) {
+        const bar = document.getElementById(`phase-fill-${phaseId}`);
+        const status = document.getElementById(`phase-status-${phaseId}`);
+        if (bar)
+          bar.style.width =
+            total > 0 ? Math.round((done / total) * 100) + "%" : "0%";
+        if (status && !status.textContent.includes("⚠️"))
+          status.textContent =
+            total > 0 ? `${Math.min(done, total)}/${total}` : "";
+      }
 
-function setPhaseProgress(num, done, total) {
-  const bar = document.getElementById(`phase-fill-${num}`);
-  const status = document.getElementById(`phase-status-${num}`);
-  const clamped = Math.min(done, total);
-  if (bar) bar.style.width = total > 0 ? Math.round(clamped/total*100)+'%' : '0%';
-  if (status && !status.textContent.includes('⚠️')) {
-    status.textContent = total > 0 ? `${clamped}/${total}` : '';
-  }
-}
-
-function showPhaseRow(num, show) {
-  const row = document.getElementById(`phase-row-${num}`);
-  if (row) row.style.display = show ? 'flex' : 'none';
-  const rows = document.getElementById('phase-rows');
-  if (rows) rows.style.display = 'flex';
-}
-
-async function startClassification() {
-  const key = localStorage.getItem(LS_KEY) || '';
-  if (!key.startsWith('AIza')) { showToast('Configure sua chave Gemini primeiro.'); return; }
-  if (!allRows.length) { showToast('Carregue um CSV primeiro.'); return; }
-
-  const activeCols = COL_DEFS.filter(c => colStates[c.id].active);
-  if (!activeCols.length) { showToast('Selecione pelo menos uma coluna.'); return; }
-
-  stopFlag = false;
-  document.getElementById('btn-start').style.display = 'none';
-  document.getElementById('btn-pause').style.display = 'inline-block';
-  document.getElementById('progress-wrap').classList.add('show');
-
-  // ── Limpar campos antes de começar (modo 'all') ────────────────────────
-  activeCols.forEach(c => {
-    if (colStates[c.id].mode === 'all') {
-      allRows.forEach((row, i) => {
-        allRows[i][c.id] = '';
-        if (SOURCE_COLS.includes(`${c.id}_source`)) {
-          allRows[i][`${c.id}_source`] = '';
+      function buildPhaseRows(regexRules, aiRules) {
+        const rows = document.getElementById("phase-rows");
+        rows.style.display = "flex";
+        let html = "";
+        if (regexRules.length) {
+          const names = regexRules.map((r) => r.id).join(", ");
+          html += `<div class="phase-row">
+            <span class="phase-label">⚡ regex (${names})</span>
+            <div class="phase-bar"><div class="phase-fill phase-fill-regex" id="phase-fill-regex" style="width:0%"></div></div>
+            <span class="phase-status" id="phase-status-regex"></span>
+          </div>`;
         }
-      });
-    }
-  });
+        aiRules.forEach((r) => {
+          const safeId = r.id.replace(/[^a-zA-Z0-9_-]/g, "_");
+          html += `<div class="phase-row">
+            <span class="phase-label">🤖 ${esc(r.id)}</span>
+            <div class="phase-bar"><div class="phase-fill phase-fill-ai" id="phase-fill-${safeId}" style="width:0%"></div></div>
+            <span class="phase-status" id="phase-status-${safeId}"></span>
+          </div>`;
+        });
+        rows.innerHTML = html;
+      }
 
-  // After pre-cleanup, all checks are simply "is the field still empty?"
-  const rowNeedsWork = i => activeCols.some(c => (allRows[i][c.id]||'').trim() === '');
-
-  // ── Fase 1: regex for task and target ─────────────────────────────────
-  const regexCols = ['task','target'].filter(id => activeCols.some(c => c.id === id));
-  if (regexCols.length) {
-    showPhaseRow(1, true);
-    setPhaseStatus(1, 'rodando…');
-    document.getElementById('progress-label').textContent = '⚡ Fase 1 — classificando por regex…';
-    allRows.forEach((row, i) => {
-      const regexResult = applyRegex(row);
-      regexCols.forEach(id => {
-        if (needsClassification(row, id, colStates[id]?.mode || 'empty') && regexResult[id] !== null) {
-          allRows[i][id] = regexResult[id];
-          allRows[i][`${id}_source`] = 'regex';
+      async function startClassification() {
+        const key = localStorage.getItem(LS_KEY) || "";
+        if (!key.startsWith("AIza")) {
+          showToast("Configure sua chave Gemini primeiro.");
+          return;
         }
-        // null = no match → leave empty → API phases will handle
-      });
-    });
-    setPhaseStatus(1, '✓ concluída');
-    setPhaseProgress(1, allRows.length, allRows.length);
-    updateStats(); renderTable();
-  }
+        if (!allRows.length) {
+          showToast("Carregue um CSV primeiro.");
+          return;
+        }
 
-  // ── Recalculate totals after regex (Phase 1) ──────────────────────────
-  // ── Separate cols by phase ────────────────────────────────────────────
-  // After pre-cleanup + regex, API phases only need to fill what's still empty
-  const taskCols   = activeCols.filter(c => c.id === 'task');
-  const targetCols = activeCols.filter(c => c.id === 'target');
-  const archCols   = activeCols.filter(c => ['architecture','model','complementary_technique'].includes(c.id));
+        const activeRules = userRules.filter((r) => r.active && r.id.trim());
+        if (!activeRules.length) {
+          showToast("Defina pelo menos uma regra com nome.");
+          return;
+        }
 
-  const rowNeedsTask   = i => taskCols.some(c   => { const v = (allRows[i][c.id]||'').trim(); return v === ''; });
-  const rowNeedsTarget = i => targetCols.some(c  => { const v = (allRows[i][c.id]||'').trim(); return v === ''; });
-  const rowNeedsArch   = i => archCols.some(c    => { const v = (allRows[i][c.id]||'').trim(); return v === ''; });
+        ensureRuleColumns();
+        stopFlag = false;
+        document.getElementById("btn-start").style.display = "none";
+        document.getElementById("btn-pause").style.display = "inline-block";
+        document.getElementById("progress-wrap").classList.add("show");
 
-  let done2 = 0, done3 = 0, done4 = 0;
-  let total2 = 0, total3 = 0, total4 = 0;
+        // Pre-clear for mode='all'
+        activeRules.forEach((r) => {
+          if (r.mode === "all") {
+            allRows.forEach((_, i) => {
+              allRows[i][r.id] = "";
+              allRows[i][`${r.id}_source`] = "";
+            });
+          }
+        });
 
-  function updateProgress() {
-    const done = allRows.filter((_,i) => !rowNeedsWork(i)).length;
-    const pct  = Math.round(done / allRows.length * 100);
-    document.getElementById('progress-fill').style.width = pct + '%';
-    document.getElementById('progress-pct').textContent = pct + '%';
-    document.getElementById('progress-label').textContent = `Classificando… ${done}/${allRows.length}`;
-    if (taskCols.length)   setPhaseProgress(2, done2, total2);
-    if (targetCols.length) setPhaseProgress(3, done3, total3);
-    if (archCols.length)   setPhaseProgress(4, done4, total4);
-    document.getElementById('btn-download').disabled = false;
-    updateStats(); renderTable();
-  }
+        const regexRules = activeRules.filter(
+          (r) => r.method === "regex" || r.method === "regex+ai",
+        );
+        const aiRules = activeRules.filter(
+          (r) => r.method === "ai" || r.method === "regex+ai",
+        );
+        buildPhaseRows(regexRules, aiRules);
 
-  // ── Phase 2: task (API only where regex had no match) ─────────────────
-  async function phase2() {
-    if (!taskCols.length) return;
-    let buffer = [];
-    for (let i = 0; i < allRows.length; i++) {
-      if (stopFlag) break;
-      if (!rowNeedsTask(i)) continue;
-      buffer.push({ row: allRows[i], globalIdx: i });
-      if (buffer.length === BATCH) {
-        const snap = buffer.slice(); buffer = [];
-        await runWithBackoff(() => classifyBatch(snap, taskCols), 2, total2, done2);
-        done2 += snap.length;
-        updateProgress();
-        if (!stopFlag) await sleep(6000);
+        // Regex phase
+        if (regexRules.length) {
+          setPhaseStatus("regex", "rodando…");
+          document.getElementById("progress-label").textContent = "⚡ Regex…";
+          allRows.forEach((row, i) => {
+            regexRules.forEach((r) => {
+              if ((allRows[i][r.id] || "").trim() !== "") return;
+              const match = applyRuleRegex(row, r);
+              if (match !== null) {
+                allRows[i][r.id] = match;
+                allRows[i][`${r.id}_source`] = "regex";
+              }
+            });
+          });
+          setPhaseStatus("regex", "✓ concluída");
+          setPhaseProgress("regex", allRows.length, allRows.length);
+          updateStats();
+          renderTable();
+        }
+
+        // Per-rule progress tracking
+        const prog = {};
+        aiRules.forEach((r) => {
+          const safeId = r.id.replace(/[^a-zA-Z0-9_-]/g, "_");
+          prog[r.id] = {
+            done: 0,
+            total: allRows.filter((row) => !(row[r.id] || "").trim()).length,
+            safeId,
+          };
+        });
+
+        function updateProgress() {
+          const totalFields = activeRules.reduce(
+            (acc, r) => acc + allRows.length,
+            0,
+          );
+          let filled = 0;
+          activeRules.forEach((r) => {
+            allRows.forEach((row) => {
+              if ((row[r.id] || "").trim()) filled++;
+            });
+          });
+          const pct =
+            totalFields > 0 ? Math.round((filled / totalFields) * 100) : 0;
+          document.getElementById("progress-fill").style.width = pct + "%";
+          document.getElementById("progress-pct").textContent = pct + "%";
+          document.getElementById("progress-label").textContent =
+            `Classificando… ${filled}/${totalFields} campos`;
+          aiRules.forEach((r) =>
+            setPhaseProgress(
+              prog[r.id].safeId,
+              prog[r.id].done,
+              prog[r.id].total,
+            ),
+          );
+          document.getElementById("btn-download").disabled = false;
+          updateStats();
+          renderTable();
+        }
+
+        async function runAIRule(rule) {
+          const p = prog[rule.id];
+          let buffer = [];
+          for (let i = 0; i < allRows.length; i++) {
+            if (stopFlag) break;
+            if ((allRows[i][rule.id] || "").trim()) continue;
+            buffer.push({ row: allRows[i], globalIdx: i });
+            if (buffer.length === BATCH) {
+              const snap = buffer.slice();
+              buffer = [];
+              await runWithBackoff(
+                () => classifyBatchForRule(snap, rule),
+                p.safeId,
+              );
+              p.done += snap.length;
+              updateProgress();
+              if (!stopFlag) await sleep(6000);
+            }
+          }
+          if (!stopFlag && buffer.length) {
+            await runWithBackoff(
+              () => classifyBatchForRule(buffer, rule),
+              p.safeId,
+            );
+            p.done += buffer.length;
+            updateProgress();
+          }
+          setPhaseStatus(p.safeId, "✓ concluída");
+        }
+
+        try {
+          await Promise.all(aiRules.map(runAIRule));
+        } catch (e) {
+          showToast("Erro inesperado: " + e.message);
+        }
+
+        document.getElementById("btn-pause").style.display = "none";
+        document.getElementById("btn-start").style.display = "inline-block";
+        const allDone = activeRules.every((r) =>
+          allRows.every((row) => (row[r.id] || "").trim()),
+        );
+        if (allDone) {
+          document.getElementById("btn-start").textContent = "✓ Concluído";
+          document.getElementById("btn-start").disabled = true;
+          document.getElementById("progress-label").textContent =
+            `✅ ${allRows.length} artigos classificados`;
+        } else {
+          document.getElementById("btn-start").textContent = "▶ Classificar";
+        }
       }
-    }
-    if (!stopFlag && buffer.length > 0) {
-      await runWithBackoff(() => classifyBatch(buffer, taskCols), 2, total2, done2);
-      done2 += buffer.length;
-      updateProgress();
-    }
-  }
 
-  // ── Phase 3: target (API only where regex had no match) ───────────────
-  async function phase3() {
-    if (!targetCols.length) return;
-    let buffer = [];
-    for (let i = 0; i < allRows.length; i++) {
-      if (stopFlag) break;
-      if (!rowNeedsTarget(i)) continue;
-      buffer.push({ row: allRows[i], globalIdx: i });
-      if (buffer.length === BATCH) {
-        const snap = buffer.slice(); buffer = [];
-        await runWithBackoff(() => classifyBatch(snap, targetCols), 3, total3, done3);
-        done3 += snap.length;
-        updateProgress();
-        if (!stopFlag) await sleep(6000);
+      function pauseClassification() {
+        stopFlag = true;
+        document.getElementById("btn-pause").style.display = "none";
+        document.getElementById("btn-start").style.display = "inline-block";
+        document.getElementById("btn-start").textContent = "▶ Classificar";
+        document.getElementById("progress-label").textContent = "⏸ Pausado";
       }
-    }
-    if (!stopFlag && buffer.length > 0) {
-      await runWithBackoff(() => classifyBatch(buffer, targetCols), 3, total3, done3);
-      done3 += buffer.length;
-      updateProgress();
-    }
-  }
-
-  // ── Phase 4: architecture, model, complementary_technique ─────────────
-  async function phase4() {
-    if (!archCols.length) return;
-    let buffer = [];
-    for (let i = 0; i < allRows.length; i++) {
-      if (stopFlag) break;
-      if (!rowNeedsArch(i)) continue;
-      buffer.push({ row: allRows[i], globalIdx: i });
-      if (buffer.length === BATCH) {
-        const snap = buffer.slice(); buffer = [];
-        await runWithBackoff(() => classifyBatch(snap, archCols), 4, total4, done4);
-        done4 += snap.length;
-        updateProgress();
-        if (!stopFlag) await sleep(6000);
+      function sleep(ms) {
+        return new Promise((r) => setTimeout(r, ms));
       }
-    }
-    if (!stopFlag && buffer.length > 0) {
-      await runWithBackoff(() => classifyBatch(buffer, archCols), 4, total4, done4);
-      done4 += buffer.length;
-      updateProgress();
-    }
-  }
 
-  // recalculate totals after Phase 1 (regex) has run
-  total2 = allRows.filter((_,i) => taskCols.length   && rowNeedsTask(i)).length;
-  total3 = allRows.filter((_,i) => targetCols.length && rowNeedsTarget(i)).length;
-  total4 = allRows.filter((_,i) => archCols.length   && rowNeedsArch(i)).length;
-
-  if (taskCols.length)   { showPhaseRow(2, true); setPhaseProgress(2, 0, total2); }
-  if (targetCols.length) { showPhaseRow(3, true); setPhaseProgress(3, 0, total3); }
-  if (archCols.length)   { showPhaseRow(4, true); setPhaseProgress(4, 0, total4); }
-
-  try {
-    await Promise.all([phase2(), phase3(), phase4()]);
-  } catch(e) { showToast('Erro inesperado: ' + e.message); }
-
-  document.getElementById('btn-pause').style.display = 'none';
-  document.getElementById('btn-start').style.display = 'inline-block';
-  const allDone = allRows.every((_,i) => !rowNeedsWork(i));
-  if (allDone) {
-    document.getElementById('btn-start').textContent = '✓ Concluído';
-    document.getElementById('btn-start').disabled = true;
-    document.getElementById('progress-label').textContent = `✅ ${allRows.length} artigos classificados`;
-  } else {
-    document.getElementById('btn-start').textContent = '▶ Classificar';
-  }
-}
-
-function pauseClassification() {
-  stopFlag = true;
-  document.getElementById('btn-pause').style.display = 'none';
-  document.getElementById('btn-start').style.display = 'inline-block';
-  document.getElementById('btn-start').textContent = '▶ Classificar';
-  document.getElementById('progress-label').textContent = '⏸ Pausado';
-}
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-// ── Table header ───────────────────────────────────────────────────────────
-function updateTableHeader() {
-  const activeCols = COL_DEFS.filter(c => colStates[c.id].active);
-  const ths = ['#','<th style="width:30%">título</th>', ...activeCols.map(c => `<th>${c.label}</th>`)].join('');
-  document.getElementById('thead-row').innerHTML = `<th class="idx">#</th><th style="width:30%">título</th>${activeCols.map(c=>`<th>${c.label}</th>`).join('')}`;
-}
-
-// ── Stats ──────────────────────────────────────────────────────────────────
-const STATS_CONFIG = [
-  { col:'target', values:['velocidade do vento','potência','outro'], labels:['Velocidade','Potência','Outro'], css: v => TARGET_CSS[v]||'p-pending' },
-  { col:'architecture', values:Object.keys(ARCH_CSS), labels:['Transformer','SSM','Recorrente','Convolucional','Grafos','MLP','Atenção','Decomposição','Ensemble','Estatístico','Probabilístico','Físico','Neuro-Fuzzy','LLM','Foundation','Outro','-'], css: v => ARCH_CSS[v]||'p-pending' },
-  { col:'task', values:Object.keys(TASK_CSS), labels:['Previsão','Otimização','Recurso','Controle','Curva','Anomalias','Ger.Dados','Simulação','Risco','Revisão','Outro'], css: v => TASK_CSS[v]||'p-pending' },
-];
-
-function updateStats() {
-  const activeCols = COL_DEFS.filter(c => colStates[c.id].active).map(c => c.id);
-  const pills = [];
-  STATS_CONFIG.forEach(cfg => {
-    if (!activeCols.includes(cfg.col)) return;
-    const counts = {};
-    cfg.values.forEach(v => counts[v] = 0);
-    allRows.forEach(r => {
-      if (cfg.col === 'architecture' && r.architecture) {
-        r.architecture.split(',').map(s=>s.trim()).forEach(tag => { if (counts[tag]!==undefined) counts[tag]++; });
-      } else if (r[cfg.col]) {
-        if (counts[r[cfg.col]] !== undefined) counts[r[cfg.col]]++;
+      // ── Table header ───────────────────────────────────────────────────────────
+      function updateTableHeader() {
+        const active = userRules.filter((r) => r.active && r.id);
+        document.getElementById("thead-row").innerHTML =
+          `<th class="idx">#</th><th style="width:30%">título</th>${active.map((r) => `<th>${esc(r.id)}</th>`).join("")}`;
       }
-    });
-    cfg.values.forEach((v, i) => {
-      if (counts[v] === 0) return;
-      const isActive = activeFilter.col === cfg.col && activeFilter.val === v;
-      pills.push(`<div class="stat-pill ${cfg.css(v)} ${isActive?'active':''}" onclick="toggleFilter('${cfg.col}','${v.replace(/'/g,"\\'")}')"><span class="sn">${counts[v]}</span>${cfg.labels[i]||v}</div>`);
-    });
-  });
-  document.getElementById('stats-pills').innerHTML = pills.join('') || '<span style="font-size:10px;color:var(--muted)">nenhuma coluna com dados</span>';
-}
 
-function renderTable() {
-  const activeCols = COL_DEFS.filter(c => colStates[c.id].active);
-  const q = (document.getElementById('search').value || '').toLowerCase();
-  const visible = allRows.map((r,i) => ({...r,_i:i})).filter(r => {
-    let matchF = true;
-    if (activeFilter.val) {
-      if (activeFilter.col === 'architecture') {
-        matchF = r.architecture ? r.architecture.split(',').map(s=>s.trim()).includes(activeFilter.val) : false;
-      } else {
-        matchF = r[activeFilter.col] === activeFilter.val;
+      // ── Stats ──────────────────────────────────────────────────────────────────
+      function updateStats() {
+        const active = userRules.filter((r) => r.active && r.id);
+        const pills = [];
+        active.forEach((r) => {
+          const counts = {};
+          const isArch = r.id === "architecture";
+          allRows.forEach((row) => {
+            const val = (row[r.id] || "").trim();
+            if (!val) return;
+            const tags = isArch ? val.split(",").map((s) => s.trim()) : [val];
+            tags.forEach((t) => {
+              counts[t] = (counts[t] || 0) + 1;
+            });
+          });
+          Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .forEach(([val, cnt]) => {
+              const isActive =
+                activeFilter.col === r.id && activeFilter.val === val;
+              const css = badgeCss(r.id, val);
+              pills.push(
+                `<div class="stat-pill ${css} ${isActive ? "active" : ""}" onclick="toggleFilter('${esc(r.id)}','${val.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}')">` +
+                  `<span class="sn">${cnt}</span>${esc(val)}</div>`,
+              );
+            });
+        });
+        document.getElementById("stats-pills").innerHTML =
+          pills.join("") ||
+          '<span style="font-size:10px;color:var(--muted)">nenhum dado ainda</span>';
       }
-    }
-    const matchQ = !q || (r.Title||r.title||'').toLowerCase().includes(q);
-    return matchF && matchQ;
-  });
-  document.getElementById('visible-count').textContent = `${visible.length}/${allRows.length}`;
-  const MAX = 300;
-  document.getElementById('tbody').innerHTML = visible.slice(0, MAX).map(r => {
-    const colCells = activeCols.map(c => {
-      const val = r[c.id] || '';
-      if (c.id === 'architecture') {
-        const badges = val ? val.split(',').map(s=>s.trim()).map(tag=>`<span class="badge ${ARCH_CSS[tag]||'p-arch-out'}">${esc(tag)}</span>`).join('') : '<span class="badge p-pending">…</span>';
-        return `<td class="tags-cell">${badges}</td>`;
+
+      // ── Table render ───────────────────────────────────────────────────────────
+      function renderTable() {
+        const active = userRules.filter((r) => r.active && r.id);
+        const q = (document.getElementById("search").value || "").toLowerCase();
+        const visible = allRows
+          .map((r, i) => ({ ...r, _i: i }))
+          .filter((r) => {
+            let matchF = true;
+            if (activeFilter.val) {
+              if (activeFilter.col === "architecture") {
+                matchF = (r.architecture || "")
+                  .split(",")
+                  .map((s) => s.trim())
+                  .includes(activeFilter.val);
+              } else {
+                matchF = r[activeFilter.col] === activeFilter.val;
+              }
+            }
+            const matchQ =
+              !q || (r.Title || r.title || "").toLowerCase().includes(q);
+            return matchF && matchQ;
+          });
+        document.getElementById("visible-count").textContent =
+          `${visible.length}/${allRows.length}`;
+        const MAX = 300;
+        document.getElementById("tbody").innerHTML = visible
+          .slice(0, MAX)
+          .map((r) => {
+            const colCells = active
+              .map((rule) => {
+                const val = r[rule.id] || "";
+                if (rule.id === "architecture") {
+                  const badges = val
+                    ? val
+                        .split(",")
+                        .map((s) => s.trim())
+                        .map(
+                          (tag) =>
+                            `<span class="badge ${ARCH_CSS[tag] || "p-arch-out"}">${esc(tag)}</span>`,
+                        )
+                        .join("")
+                    : '<span class="badge p-pending">…</span>';
+                  return `<td class="tags-cell">${badges}</td>`;
+                }
+                if (rule.id === "target")
+                  return `<td><span class="badge ${TARGET_CSS[val] || "p-pending"}">${esc(val || "…")}</span></td>`;
+                if (rule.id === "task")
+                  return `<td><span class="badge ${TASK_CSS[val] || "p-task-out"}">${esc(val || "…")}</span></td>`;
+                return `<td class="mono-cell" title="${esc(val)}">${esc(val || "…")}</td>`;
+              })
+              .join("");
+            return `<tr><td class="idx">${r._i + 1}</td><td class="title-cell" title="${esc(r.Title || r.title || "")}">${esc(r.Title || r.title || "")}</td>${colCells}</tr>`;
+          })
+          .join("");
+        const footer = document.getElementById("table-footer");
+        if (visible.length > MAX) {
+          footer.style.display = "block";
+          footer.textContent = `mostrando ${MAX} de ${visible.length}`;
+        } else footer.style.display = "none";
+        updateTableHeader();
       }
-      if (c.id === 'target') return `<td><span class="badge ${TARGET_CSS[val]||'p-pending'}">${esc(val||'…')}</span></td>`;
-      if (c.id === 'task')   return `<td><span class="badge ${TASK_CSS[val]||'p-task-out'}">${esc(val||'…')}</span></td>`;
-      return `<td class="mono-cell" title="${esc(val)}">${esc(val||'…')}</td>`;
-    }).join('');
-    return `<tr><td class="idx">${r._i+1}</td><td class="title-cell" title="${esc(r.Title||r.title||'')}">${esc(r.Title||r.title||'')}</td>${colCells}</tr>`;
-  }).join('');
-  const footer = document.getElementById('table-footer');
-  if (visible.length > MAX) { footer.style.display='block'; footer.textContent=`mostrando ${MAX} de ${visible.length}`; }
-  else footer.style.display='none';
-  updateTableHeader();
-}
 
-function toggleFilter(col, val) {
-  activeFilter = (activeFilter.col===col && activeFilter.val===val) ? {col:null,val:null} : {col,val};
-  document.getElementById('btn-clr').style.display = activeFilter.val ? 'inline-block' : 'none';
-  updateStats(); renderTable();
-}
-function clearFilter() { activeFilter={col:null,val:null}; document.getElementById('btn-clr').style.display='none'; updateStats(); renderTable(); }
-function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+      function toggleFilter(col, val) {
+        activeFilter =
+          activeFilter.col === col && activeFilter.val === val
+            ? { col: null, val: null }
+            : { col, val };
+        document.getElementById("btn-clr").style.display = activeFilter.val
+          ? "inline-block"
+          : "none";
+        updateStats();
+        renderTable();
+      }
+      function clearFilter() {
+        activeFilter = { col: null, val: null };
+        document.getElementById("btn-clr").style.display = "none";
+        updateStats();
+        renderTable();
+      }
+      function esc(s) {
+        return (s || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
 
-// ── Download ───────────────────────────────────────────────────────────────
-function downloadCSV() {
-  const newColIds = [...COL_DEFS.map(c => c.id), ...SOURCE_COLS];
-  const originalCols = Object.keys(allRows[0]||{}).filter(k => !newColIds.includes(k));
-  const colMap = [
-    ...originalCols.map(k => ({ header: k, key: k })),
-    ...COL_DEFS.map(c => ({ header: ['task','target'].includes(c.id) ? `${c.id}_predicted` : c.id, key: c.id })),
-    ...SOURCE_COLS.map(k => ({ header: k, key: k })),
-  ];
-  const lines = [colMap.map(({header}) => `"${header}"`).join(',')];
-  allRows.forEach(r => { lines.push(colMap.map(({key}) => `"${String(r[key]||'').replace(/"/g,'""')}"`).join(',')); });
-  const encoded = btoa(unescape(encodeURIComponent(lines.join('\n'))));
-  const a = document.createElement('a');
-  a.href = `data:text/csv;charset=utf-8;base64,${encoded}`;
-  a.download = 'biia-output.csv';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-}
+      // ── Download ───────────────────────────────────────────────────────────────
+      function downloadCSV() {
+        const ruleIds = userRules.map((r) => r.id).filter(Boolean);
+        const srcKeys = ruleIds.map((id) => `${id}_source`);
+        const newCols = new Set([...ruleIds, ...srcKeys]);
+        const originalCols = Object.keys(allRows[0] || {}).filter(
+          (k) => !newCols.has(k),
+        );
+        const colMap = [
+          ...originalCols.map((k) => ({ header: k, key: k })),
+          ...ruleIds.map((id) => ({ header: id, key: id })),
+          ...srcKeys.map((k) => ({ header: k, key: k })),
+        ];
+        const lines = [colMap.map(({ header }) => `"${header}"`).join(",")];
+        allRows.forEach((r) => {
+          lines.push(
+            colMap
+              .map(({ key }) => `"${String(r[key] || "").replace(/"/g, '""')}"`)
+              .join(","),
+          );
+        });
+        const encoded = btoa(unescape(encodeURIComponent(lines.join("\n"))));
+        const a = document.createElement("a");
+        a.href = `data:text/csv;charset=utf-8;base64,${encoded}`;
+        a.download = "biia-output.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
 
-// ── Toast ──────────────────────────────────────────────────────────────────
-function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),4000); }
+      // ── Toast ──────────────────────────────────────────────────────────────────
+      function showToast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 4000);
+      }
 
-// ── PWA ────────────────────────────────────────────────────────────────────
-const mBlob = new Blob([JSON.stringify({
-  name:"BIIA", short_name:"BIIA",
-  start_url:".", display:"standalone",
-  background_color:"#080d14", theme_color:"#080d14",
-  icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23080d14'/%3E%3Ctext x='256' y='300' font-family='sans-serif' font-size='200' font-weight='900' text-anchor='middle' fill='url(%23g)'%3EBIIA%3C/text%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%2300e5ff'/%3E%3Cstop offset='1' stop-color='%237c3aed'/%3E%3C/linearGradient%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]
-})], {type:'application/json'});
-const mLink = document.createElement('link');
-mLink.rel = 'manifest'; mLink.href = URL.createObjectURL(mBlob);
-document.head.appendChild(mLink);
-</script>
-</body>
+      // ── PWA ────────────────────────────────────────────────────────────────────
+      const mBlob = new Blob(
+        [
+          JSON.stringify({
+            name: "BIIA",
+            short_name: "BIIA",
+            start_url: ".",
+            display: "standalone",
+            background_color: "#080d14",
+            theme_color: "#080d14",
+            icons: [
+              {
+                src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23080d14'/%3E%3Ctext x='256' y='300' font-family='sans-serif' font-size='200' font-weight='900' text-anchor='middle' fill='url(%23g)'%3EBIIA%3C/text%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%2300e5ff'/%3E%3Cstop offset='1' stop-color='%237c3aed'/%3E%3C/linearGradient%3E%3C/svg%3E",
+                sizes: "512x512",
+                type: "image/svg+xml",
+                purpose: "any maskable",
+              },
+            ],
+          }),
+        ],
+        { type: "application/json" },
+      );
+      const mLink = document.createElement("link");
+      mLink.rel = "manifest";
+      mLink.href = URL.createObjectURL(mBlob);
+      document.head.appendChild(mLink);
+    </script>
+  </body>
 </html>
