@@ -1,5 +1,0 @@
-label,estrato,n_total_estrato,n_revisados,cobertura_pct,acuracia,ci95_lower,ci95_upper,margem_erro_95pp,n_minimo_moe5pct,suficiente,chi2_representatividade,p_valor_chi2,amostra_representativa,graus_liberdade,nota_chi2
-task,any_ai (populacao),262,262,100.0,0.8206,,,,,N/A (populacao completa),,,N/A (populacao completa),,
-target,any_ai (populacao),262,262,100.0,0.7901,,,,,N/A (populacao completa),,,N/A (populacao completa),,
-task,both_regex (amostra),1948,695,35.7,0.9237,0.9016,0.9412,1.98,109.0,SIM,1.5377,0.8199,SIM (p>=0.05),4.0,categorias raras agrupadas: 10 -> 5 grupos
-target,both_regex (amostra),1948,808,41.5,0.9567,0.9404,0.9687,1.42,64.0,SIM,1.1179,0.2904,SIM (p>=0.05),1.0,sem agrupamento necessario
