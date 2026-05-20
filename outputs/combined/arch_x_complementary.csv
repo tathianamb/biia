@@ -1,0 +1,8 @@
+arch_list,bayesian optimization,differential evolution,feature selection,ga,genetic algorithm,grey wolf optimization,grid search,kernel density estimation,multi-objective optimization,pso,quantile regression,reinforcement learning,rime optimization,sparrow search algorithm,transfer learning,whale optimization algorithm
+ensemble,4,3,1,1,0,3,2,0,5,3,12,4,0,0,2,4
+estatístico,1,1,0,0,0,1,2,0,1,7,10,0,0,0,1,0
+mlp-based,2,1,1,2,2,3,0,3,5,4,10,0,0,4,1,5
+outro,0,0,0,0,0,0,0,0,0,2,4,3,0,1,1,0
+rede convolucional,2,2,0,1,0,2,2,1,1,3,14,2,1,1,11,3
+rede recorrente,10,4,4,5,3,8,5,1,3,12,20,4,3,9,11,5
+transformer,2,0,1,0,0,1,0,0,0,1,9,0,3,0,4,0

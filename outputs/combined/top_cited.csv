@@ -1,0 +1,21 @@
+Year,Cited by,Title,Source title,DOI,architecture
+2022,210,Interpretable wind speed prediction with multivariate time series and temporal fusion transformers,Energy,10.1016/j.energy.2022.123990,Transformer
+2022,187,A novel offshore wind farm typhoon wind speed prediction model based on PSO–Bi-LSTM improved by VMD,Energy,10.1016/j.energy.2022.123848,Rede Recorrente
+2023,185,A transformer-based deep neural network with wavelet transform for forecasting wind speed and wind energy,Energy,10.1016/j.energy.2023.127678,Transformer
+2022,182,Multi-step-ahead wind speed forecasting based on a hybrid decomposition method and temporal convolutional networks,Energy,10.1016/j.energy.2021.121981,Rede Convolucional
+2023,178,Spatio-temporal wind speed forecasting using graph networks and novel Transformer architectures,Applied Energy,10.1016/j.apenergy.2022.120565,"Rede de Grafos, Transformer, Rede Recorrente, MLP-based"
+2022,177,Multistep short-term wind speed forecasting using transformer,Energy,10.1016/j.energy.2022.125231,Transformer
+2022,163,A short-term wind speed prediction method utilizing novel hybrid deep learning algorithms to correct numerical weather forecasting,Applied Energy,10.1016/j.apenergy.2022.118777,"Físico, Rede Convolucional, Rede Recorrente"
+2022,152,Short-term wind speed forecasting based on long short-term memory and improved BP neural network,International Journal of Electrical Power and Energy Systems,10.1016/j.ijepes.2021.107365,"Rede Recorrente, MLP-based"
+2022,150,Integrated framework of extreme learning machine (ELM) based on improved atom search optimization for short-term wind speed prediction,Energy Conversion and Management,10.1016/j.enconman.2021.115102,MLP-based
+2023,148,Multi-head attention-based probabilistic CNN-BiLSTM for day-ahead wind speed forecasting,Energy,10.1016/j.energy.2023.127865,"Transformer, Rede Convolucional, Rede Recorrente, Ensemble"
+2022,147,"An evolutionary deep learning model based on TVFEMD, improved sine cosine algorithm, CNN and BiLSTM for wind speed prediction",Energy,10.1016/j.energy.2022.124250,"Rede Convolucional, Rede Recorrente"
+2023,146,Hybrid wind speed forecasting using ICEEMDAN and transformer model with novel loss function,Energy,10.1016/j.energy.2022.126383,Transformer
+2023,144,Near real-time wind speed forecast model with bidirectional LSTM networks,Renewable Energy,10.1016/j.renene.2022.12.123,Rede Recorrente
+2022,141,Wind speed prediction of unmanned sailboat based on CNN and LSTM hybrid neural network,Ocean Engineering,10.1016/j.oceaneng.2022.111352,"Rede Convolucional, Rede Recorrente"
+2024,136,Football team training algorithm: A novel sport-inspired meta-heuristic optimization algorithm for global optimization,Expert Systems with Applications,10.1016/j.eswa.2023.123088,-
+2024,134,A dual-optimization wind speed forecasting model based on deep learning and improved dung beetle optimization algorithm,Energy,10.1016/j.energy.2023.129604,Rede Recorrente
+2022,122,A combined short-term wind speed forecasting model based on CNN–RNN and linear regression optimization considering error,Renewable Energy,10.1016/j.renene.2022.09.114,"Rede Convolucional, Rede Recorrente, Estatístico"
+2023,120,Multivariate wind speed forecasting based on multi-objective feature selection approach and hybrid deep learning model,Energy,10.1016/j.energy.2022.126100,"Rede Convolucional, Rede Recorrente"
+2024,117,"Enhancing wind speed forecasting through synergy of machine learning, singular spectral analysis, and variational mode decomposition",Energy,10.1016/j.energy.2024.130493,Rede Recorrente
+2022,114,Wind speed prediction using a hybrid model of EEMD and LSTM considering seasonal features,Energy Reports,10.1016/j.egyr.2022.07.007,"Rede Recorrente, Estatístico"

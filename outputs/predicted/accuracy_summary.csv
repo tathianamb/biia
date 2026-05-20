@@ -1,0 +1,7 @@
+label,source,n_revisados,concordantes,discordantes,acuracia
+task,regex,825,749,76,0.9079
+task,ai,132,108,24,0.8182
+task,total,957,857,100,0.8955
+target,regex,885,837,48,0.9458
+target,ai,185,143,42,0.773
+target,total,1070,980,90,0.9159

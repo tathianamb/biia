@@ -1,0 +1,30 @@
+(deep learning/wind speed forecasting): 35
+(deep learning/wind speed prediction): 25
+(forecasting/wind speed): 18
+(machine learning/wind speed forecasting): 17
+(variational mode decomposition/wind speed forecasting): 16
+(long short term memory/wind speed forecasting): 16
+(hybrid model/wind speed prediction): 15
+(variational mode decomposition/wind speed prediction): 13
+(machine learning/wind speed prediction): 13
+(feature selection/wind speed forecasting): 11
+(machine learning/wind speed): 11
+(deep learning/wind speed): 11
+(renewable energy/wind speed forecasting): 10
+(renewable energy/wind speed prediction): 10
+(machine learning/renewable energy): 10
+(deep learning/renewable energy): 10
+(combined model/wind speed forecasting): 9
+(lstm/wind speed prediction): 9
+(deep learning/wind energy): 9
+(transformer/wind speed forecasting): 9
+(deep learning/long short term memory): 9
+(wind energy/wind speed forecasting): 9
+(wind energy/wind speed): 9
+(hybrid model/wind speed forecasting): 8
+(attention mechanism/wind speed prediction): 8
+(gated recurrent unit/wind speed forecasting): 8
+(lstm/wind speed forecasting): 8
+(attention mechanism/wind speed forecasting): 8
+(artificial neural network/wind speed): 7
+(artificial neural network/wind speed prediction): 7

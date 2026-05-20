@@ -1,0 +1,35 @@
+predicted,checked,count
+previsão,revisão,12
+previsão,outro,12
+previsão,otimização,10
+previsão,avaliação de recurso,9
+previsão,controle,7
+simulação física,previsão,6
+previsão,simulação física,5
+otimização,previsão,4
+previsão,avaliação de risco,2
+avaliação de recurso,previsão,2
+modelagem de curva,previsão,2
+detecção de anomalias,outro,2
+geração de dados,previsão,2
+otimização,controle,2
+previsão,detecção de anomalias,2
+otimização,revisão,2
+previsão,modelagem de curva,2
+avaliação de recurso,otimização,1
+otimização,outro,1
+otimização,avaliação de risco,1
+geração de dados,geração de dados,1
+controle,controle,1
+detecção de anomalias,controle,1
+detecção de anomalias,modelagem de curva,1
+detecção de anomalias,previsão,1
+geração de dados,avaliação de risco,1
+avaliação de risco,avaliação de recurso,1
+controle,modelagem de curva,1
+outro,simulação física,1
+outro,avaliação de risco,1
+previsão,previsão e detecção de anomalia,1
+previsão,previsão,1
+simulação física,avaliação de recurso,1
+simulação física,outro,1
