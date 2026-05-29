@@ -11,12 +11,11 @@ BIIA was developed as part of a systematic literature review on **wind energy fo
 ## Features
 
 - **No installation required** — runs entirely in the browser as a PWA (installable on desktop and mobile)
-- **Selective classification** — choose which columns to classify in each session
-- **Fill modes per column** — fill empty cells only, or overwrite everything
-- **Four-phase classification** — regex pre-classification followed by three parallel API phases
-- **Dynamic prompt construction** — the prompt sent to the AI is built automatically based on selected columns
-- **Rich context inference** — uses `Title`, `Abstract`, `Author Keywords`, and `Index Keywords`
-- **Atomic architecture tags** — a single paper receives all applicable tags
+- **Fully customizable rules** — define any number of classification rules, each with its own column name, input fields, method, and prompt
+- **Three classification methods per rule** — regex only, AI only, or regex-then-AI (unmatched rows fall through to the API)
+- **Fill modes per rule** — fill empty cells only, or overwrite everything
+- **Two-phase pipeline** — a single regex phase followed by all AI rules running in parallel
+- **Independent prompt per rule** — each rule sends its own focused prompt, reducing token usage and allowing independent refinement
 - **Live prompt preview** — inspect the exact prompt before running
 - **Real payload preview** — see the exact content sent to the API for the first article
 - **Resumable sessions** — classification can be paused and continued without losing progress
@@ -25,19 +24,19 @@ BIIA was developed as part of a systematic literature review on **wind energy fo
 
 ---
 
-## Classified columns
+## Default presets
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `target` | closed list | What the model predicts: wind speed, power, or other |
-| `architecture` | multiple atomic tags | Architectural components of the proposed model |
-| `model` | free text | Exact name or acronym of the proposed model |
-| `complementary_technique` | free text | Optimization, training paradigm, or methodological strategy |
-| `task` | closed list | Primary research task of the paper |
+BIIA ships with five preset rules for wind energy literature. They can be used as-is, modified, or replaced entirely.
+
+| Column | Method | Input fields |
+|--------|--------|-------------|
+| `target` | regex + AI | Title, Author Keywords |
+| `task` | regex + AI | Title, Author Keywords |
+| `architecture` | AI only | Title, Abstract, Author Keywords, Index Keywords |
+| `model` | AI only | Title, Abstract, Author Keywords, Index Keywords |
+| `complementary_technique` | AI only | Title, Abstract, Author Keywords, Index Keywords |
 
 ### Target values
-
-Classification follows a strict hierarchy applied in order:
 
 | Priority | Value | Rule |
 |----------|-------|------|
@@ -65,47 +64,42 @@ Classification follows a strict hierarchy applied in order:
 
 ## Classification methodology
 
-### Four-phase pipeline
+### Two-phase pipeline
 
-BIIA classifies papers through four phases. Phases 2, 3, and 4 run in parallel to minimize total processing time.
+BIIA classifies papers in two phases. The regex phase runs first; then all AI rules run in parallel.
 
 ```
 Phase 1 — Regex (instantaneous, no API calls)
-  └─ Classifies task and target using title and author keywords
-  └─ Papers without a confident match are left empty → handled by API phases
+  └─ Runs for every rule configured as "regex" or "regex+ai"
+  └─ Papers without a confident match are left empty → sent to the AI phase
 
-Phase 2 — API: task              ─┐
-  └─ Only papers where regex      │
-     found no match               ├─ run in parallel
-                                   │
-Phase 3 — API: target            ─┤
-  └─ Only papers where regex      │
-     found no match               │
-                                   │
-Phase 4 — API: architecture,    ─┘
-          model,
-          complementary_technique
-  └─ All papers requiring these columns
+Phase 2 — AI (parallel)
+  └─ One independent task per rule configured as "ai" or "regex+ai"
+  └─ All tasks run concurrently — 2 rules → 2 parallel streams,
+     5 rules → 5 parallel streams
+  └─ Each rule uses only the rows still empty after the regex phase
 ```
 
-This design significantly reduces API usage: only ambiguous cases reach the API for `task` and `target`, while `architecture`, `model`, and `complementary_technique` always require AI inference.
+The number of parallel AI streams equals the number of active AI rules. There are no fixed groups — parallelism is fully dynamic based on the user's configuration.
 
 ---
 
 ### Phase 1 — Regex classification
 
-Regex classification is conservative by design: it only assigns a value when there is high confidence in the match. Papers without a confident match are left empty and handled by the API in the corresponding Phase 2 or 3.
+Regex classification is conservative by design: it only assigns a value when there is high confidence in the match. Papers without a confident match are left empty and handled by the AI phase.
 
-#### Search scope
+Each rule defines its own regex patterns as ordered lines in the format `/pattern/flags → value`. The first match wins.
+
+#### Default regex scope
 
 | Column | Search fields |
 |--------|--------------|
 | `task` | Title + Author Keywords |
 | `target` | Title + Author Keywords |
 
-The abstract and Index Keywords are intentionally excluded from regex search. Terms such as "forecasting", "optimization", or "wind speed" frequently appear in the abstract and keyword lists as context, background, or baseline description — not as the paper's primary contribution. Restricting search to the title and author keywords yields higher precision at the cost of recall, with the API handling the remaining cases.
+The abstract and Index Keywords are intentionally excluded from the default regex rules. Terms such as "forecasting", "optimization", or "wind speed" frequently appear in the abstract and keyword lists as context, background, or baseline description — not as the paper's primary contribution. Restricting search to the title and author keywords yields higher precision at the cost of recall, with the API handling the remaining cases.
 
-#### Task hierarchy
+#### Default task regex hierarchy
 
 Rules are tested in order. The first match wins.
 
@@ -121,7 +115,7 @@ Rules are tested in order. The first match wins.
 | 8 | `avaliação de recurso` | "resource assessment", "wind potential" |
 | 9 | `otimização` | "scheduling", "dispatch", "arbitrage", "unit commitment" |
 | 10 | `previsão` | "forecasting", "prediction" |
-| 11 | _(no match)_ | Left empty → sent to API in Phase 2 |
+| 11 | _(no match)_ | Left empty → sent to AI phase |
 
 **Key design decisions:**
 
@@ -130,13 +124,13 @@ Rules are tested in order. The first match wins.
 - `optimization` alone is deliberately excluded from the `otimização` trigger terms, as it commonly refers to model hyperparameter optimization rather than operational optimization.
 - `SCADA` alone is excluded from `detecção de anomalias` because SCADA data is used across multiple tasks including forecasting.
 
-#### Target hierarchy
+#### Default target regex hierarchy
 
 | Priority | Target | Trigger terms |
 |----------|--------|---------------|
 | 1 | `velocidade do vento` | "wind speed" |
 | 2 | `potência` | "wind power" |
-| 3 | _(no match)_ | Left empty → sent to API in Phase 3 |
+| 3 | _(no match)_ | Left empty → sent to AI phase |
 
 **Key design decisions:**
 
@@ -145,31 +139,15 @@ Rules are tested in order. The first match wins.
 
 ---
 
-### Phase 2 — API for task
+### Phase 2 — AI classification
 
-Papers where the regex found no match for `task` are sent to the Gemini API in batches of 5, with a 6-second interval between batches. The prompt contains only the block for `task`, minimizing token usage.
+Each AI rule sends its own independent prompt to the Gemini API. Rows are processed in batches of 5, with a 6-second pause between batches to respect rate limits. All rules run concurrently as independent streams.
 
-The API prompt for `task` follows the same hierarchy as the regex rules, but expressed in natural language with additional context and examples that the model can leverage for ambiguous cases.
-
----
-
-### Phase 3 — API for target
-
-Papers where the regex found no match for `target` are processed via the Gemini API in parallel with Phase 2. The prompt contains only the block for `target`.
-
----
-
-### Phase 4 — API for architecture, model, and complementary_technique
-
-All papers requiring classification of `architecture`, `model`, or `complementary_technique` are processed via the Gemini API in parallel with Phases 2 and 3. These columns cannot be reliably classified by regex because they require understanding the proposed model's structure from the abstract.
-
-#### Modular prompt engineering
-
-Each column has an independent prompt block. BIIA assembles only the blocks for the selected columns, reducing token consumption and allowing each block to be refined independently.
+Each prompt includes only the fields configured for that rule, minimizing token usage. The response is a JSON array mapping article index to the classified value.
 
 #### Automatic retry with backoff
 
-Phases 2, 3, and 4 all implement automatic retry with exponential backoff:
+All AI rules implement automatic retry with exponential backoff:
 - Attempts 1–3: wait 2 minutes before retrying
 - Attempt 4 onward: wait 5 minutes before retrying
 - Classification never stops automatically — only the user can pause it
@@ -180,7 +158,7 @@ A countdown timer is displayed during wait periods. The attempt counter resets a
 
 ### Architecture taxonomy
 
-The taxonomy uses atomic, combinable tags. Any model, however complex, is described as a combination of these atoms. A paper receives all tags that apply to its proposed model.
+The `architecture` preset uses atomic, combinable tags. Any model, however complex, is described as a combination of these atoms. A paper receives all tags that apply to its proposed model.
 
 | Tag | Description | Examples |
 |-----|-------------|---------|
@@ -203,7 +181,7 @@ The taxonomy uses atomic, combinable tags. Any model, however complex, is descri
 
 ## Fill modes
 
-Each selected column can be configured independently:
+Each rule can be configured independently:
 
 | Mode | Behavior |
 |------|----------|
@@ -237,23 +215,13 @@ A CSV file with at least `Title` and `Abstract` columns. When available, `Author
 
 ## CSV output
 
-All original columns are preserved. BIIA appends the following columns:
+All original columns are preserved. BIIA appends one column per active rule, named by the rule's ID. For rules configured as `regex+ai`, an additional `<id>_source` column is added indicating whether the value came from `regex` or `ai`.
 
-| Column | Description |
-|--------|-------------|
-| `architecture` | Atomic architecture tags, comma-separated |
-| `model` | Name or acronym of the proposed model |
-| `complementary_technique` | Complementary techniques, comma-separated |
-| `task_predicted` | Classified task value |
-| `target_predicted` | Classified target value |
-| `task_source` | How `task` was classified: `regex` or `ai` |
-| `target_source` | How `target` was classified: `regex` or `ai` |
-
-### Example
+### Example (default presets)
 
 ```
-Title,Abstract,Author Keywords,doi,year,architecture,model,complementary_technique,task_predicted,target_predicted,task_source,target_source
-"Wind speed forecasting...","This paper proposes...","wind speed; LSTM; VMD","10.xxx",2025,"Rede Recorrente, Rede Convolucional","VMD+BiLSTM","PSO","previsão","velocidade do vento","regex","regex"
+Title,Abstract,Author Keywords,doi,year,architecture,model,complementary_technique,task,task_source,target,target_source
+"Wind speed forecasting...","This paper proposes...","wind speed; LSTM; VMD","10.xxx",2025,"Rede Recorrente, Rede Convolucional","VMD+BiLSTM","PSO","previsão","regex","velocidade do vento","regex"
 ```
 
 ---
