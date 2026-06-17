@@ -1969,7 +1969,27 @@ ${articles}`;
           });
           setPhaseStatus("regex", "✓ concluída");
           setPhaseProgress("regex", allRows.length, allRows.length);
-          document.getElementById("btn-download").disabled = false;  // ← ADICIONAR
+          document.getElementById("btn-download").disabled = false;
+          updateStats();
+          renderTable();
+          setPhaseStatus("regex", "✓ concluída");
+          setPhaseProgress("regex", allRows.length, allRows.length);
+          document.getElementById("btn-download").disabled = false;
+          // Atualiza a barra global ao fim do regex (importante p/ regras só-regex)
+          {
+            const totalFields = activeRules.length * allRows.length;
+            let filled = 0;
+            activeRules.forEach((r) => {
+              allRows.forEach((row) => {
+                if ((row[r.id] || "").trim()) filled++;
+              });
+            });
+            const pct = totalFields > 0 ? Math.round((filled / totalFields) * 100) : 0;
+            document.getElementById("progress-fill").style.width = pct + "%";
+            document.getElementById("progress-pct").textContent = pct + "%";
+            document.getElementById("progress-label").textContent =
+              `Classificando… ${filled}/${totalFields} campos`;
+          }
           updateStats();
           renderTable();
         }
