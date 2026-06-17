@@ -157,6 +157,54 @@
         border-radius: 4px;
         padding: 2px 8px;
       }
+      .hdr-model-select {
+        font-size: 10px;
+        color: var(--accent);
+        background: var(--card);
+        border: 1px solid #00e5ff30;
+        border-radius: 4px;
+        padding: 3px 6px;
+        font-family: "JetBrains Mono", monospace;
+        outline: none;
+        max-width: 190px;
+      }
+      .retry-btn {
+        font-size: 9px;
+        color: var(--warn);
+        background: none;
+        border: 1px solid var(--warn);
+        border-radius: 4px;
+        padding: 1px 6px;
+        margin-left: 4px;
+        cursor: pointer;
+        font-family: "JetBrains Mono", monospace;
+      }
+      .rule-save {
+        color: var(--accent);
+        font-size: 13px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0 2px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+      .lib-chip {
+        font-size: 10px;
+        padding: 4px 10px;
+        border-radius: 99px;
+        border: 1px solid var(--accent2);
+        background: #7c3aed12;
+        color: var(--text);
+        font-family: "JetBrains Mono", monospace;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .lib-chip .lib-x {
+        color: var(--danger);
+        cursor: pointer;
+      }
       main {
         padding: 16px 20px;
         max-width: 1040px;
@@ -1036,6 +1084,7 @@
       </div>
       <div class="hdr-right">
         <span class="hdr-model" id="hdr-model" style="display: none"></span>
+        <select class="hdr-model-select" id="model-select" onchange="onModelSelect()" style="display: none"></select>
         <span class="hdr-count" id="hdr-count"></span>
         <button class="btn-sm" onclick="changeKey()">chave</button>
       </div>
@@ -1194,8 +1243,15 @@
       const LS_KEY = "biia_gemini_key";
       const LS_MOD = "biia_model";
       const BATCH = 5;
-      const GEMINI_MODELS = ["gemini-3.1-flash-lite-preview"];
-
+const GEMINI_MODELS = [
+        "gemini-3.1-flash-lite",
+        "gemma-4-31b-it",
+        "gemma-4-26b-a4b-it",
+      ];
+      const LS_PINNED = "biia_pinned_model";
+      const LS_RULES = "biia_rules_v1";
+      const LS_LIB = "biia_rulelib_v1";
+      
       // ── Preset prompt blocks ───────────────────────────────────────────────────
       const PROMPT_BLOCKS = {
         target: `Você é um especialista em ML.
@@ -1372,7 +1428,10 @@ Tarefa principal do artigo. Use EXATAMENTE uma das opções:
       let allRows = [],
         stopFlag = false;
       let activeModel = localStorage.getItem(LS_MOD) || null;
-      let activeFilter = { col: null, val: null };
+      let pinnedModel = null;
+      let ruleLibrary = [];
+      let skipWait = {};
+      let activeFilter = { col: null, val: null };      
       let userRules = [];
       let csvHeaders = [];
       let presetsOpen = false,
@@ -1381,16 +1440,12 @@ Tarefa principal do artigo. Use EXATAMENTE uma das opções:
 
       // ── API Key ────────────────────────────────────────────────────────────────
       function loadKey() {
-        activeModel = null;
-        localStorage.removeItem(LS_MOD);
-        document.getElementById("hdr-model").textContent = "auto";
-        document.getElementById("api-model-label").textContent =
-          "detectando modelo...";
+        initModel();
         const k = localStorage.getItem(LS_KEY) || "";
         if (k.startsWith("AIza") && k.length > 20) {
           document.getElementById("overlay").classList.add("hidden");
           document.getElementById("api-bar").style.display = "flex";
-          document.getElementById("hdr-model").style.display = "inline";
+          document.getElementById("model-select").style.display = "inline-block";
         } else {
           document.getElementById("overlay").classList.remove("hidden");
           document.getElementById("api-bar").style.display = "none";
@@ -1405,7 +1460,7 @@ Tarefa principal do artigo. Use EXATAMENTE uma das opções:
         localStorage.setItem(LS_KEY, k);
         document.getElementById("overlay").classList.add("hidden");
         document.getElementById("api-bar").style.display = "flex";
-        document.getElementById("hdr-model").style.display = "inline";
+        document.getElementById("model-select").style.display = "inline-block";
       }
       function changeKey() {
         document.getElementById("modal-key").value = "";
@@ -1415,6 +1470,9 @@ Tarefa principal do artigo. Use EXATAMENTE uma das opções:
         if (e.key === "Enter") saveKey();
       });
       loadKey();
+      loadLibrary();
+      loadPersistedRules();
+      buildRulesUI();
 
       // ── Rule factory ───────────────────────────────────────────────────────────
       function makeRule(overrides = {}) {
@@ -1530,15 +1588,27 @@ Tarefa principal do artigo. Use EXATAMENTE uma das opções:
           : "sugestões ▾";
         if (presetsOpen) buildPresetsChips();
       }
-
       function buildPresetsChips() {
         const existingIds = new Set(userRules.map((r) => r.id));
-        document.getElementById("presets-chips").innerHTML = PRESETS.map(
+        const presetHtml = PRESETS.map(
           (p) =>
             `<button class="preset-chip" ${existingIds.has(p.id) ? "disabled" : ""} onclick="addPreset('${p.id}')">${p.id}</button>`,
         ).join("");
+        let libHtml = "";
+        if (ruleLibrary.length) {
+          libHtml =
+            '<div style="width:100%;height:1px;background:var(--border);margin:8px 0"></div>' +
+            '<div style="width:100%;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:2px">minhas regras salvas</div>' +
+            ruleLibrary
+              .map((r) => {
+                const dis = existingIds.has(r.id);
+                const nm = r.id.replace(/'/g, "\\'");
+                return `<span class="lib-chip"><span style="${dis ? "opacity:.45" : "cursor:pointer"}" onclick="${dis ? "" : `addRuleFromLibrary('${nm}')`}">${esc(r.id)}</span><span class="lib-x" onclick="removeFromLibrary('${nm}')">×</span></span>`;
+              })
+              .join("");
+        }
+        document.getElementById("presets-chips").innerHTML = presetHtml + libHtml;
       }
-
       function togglePromptPreview() {
         promptPreviewOpen = !promptPreviewOpen;
         document
@@ -1584,6 +1654,7 @@ Tarefa principal do artigo. Use EXATAMENTE uma das opções:
     <span class="rule-name">${esc(r.id || "(sem nome)")}</span>
     <span class="rule-method-badge ${mbClass}">${mbLabel}</span>
     <div class="rule-toggle" onclick="toggleRuleActive(${i},event)"></div>
+    <button class="rule-save" onclick="event.stopPropagation();saveRuleToLibrary(${i})" title="salvar na biblioteca">★</button>
     <button class="rule-del" onclick="event.stopPropagation();removeRule(${i})">×</button>
   </div>
   <div class="rule-body" id="rule-body-${i}">
@@ -1594,7 +1665,7 @@ Tarefa principal do artigo. Use EXATAMENTE uma das opções:
       </div>
       <div>
         <div class="rule-field-label">Modo de preenchimento</div>
-        <select class="mode-select" onchange="userRules[${i}].mode=this.value">
+        <select class="mode-select" onchange="setRuleMode(${i}, this.value)">
           <option value="empty" ${r.mode === "empty" ? "selected" : ""}>Preencher apenas vazios</option>
           <option value="all" ${r.mode === "all" ? "selected" : ""}>Sobrescrever tudo</option>
         </select>
@@ -1647,16 +1718,19 @@ Tarefa principal do artigo. Use EXATAMENTE uma das opções:
             if (idEl)
               idEl.addEventListener("input", (e) => {
                 userRules[i].id = e.target.value.trim();
+                persistRules();
               });
             const rEl = document.getElementById(`rule-regex-${i}`);
             if (rEl)
               rEl.addEventListener("input", (e) => {
                 userRules[i].regexText = e.target.value;
+                persistRules();
               });
             const pEl = document.getElementById(`rule-prompt-${i}`);
             if (pEl)
               pEl.addEventListener("input", (e) => {
                 userRules[i].prompt = e.target.value;
+                persistRules();
               });
           });
           // Auto-expand pending new card
@@ -1672,8 +1746,8 @@ Tarefa principal do artigo. Use EXATAMENTE uma das opções:
         }
         if (presetsOpen) buildPresetsChips();
         if (promptPreviewOpen) updatePromptPreview();
+        persistRules();
       }
-
       function toggleRuleExpand(i) {
         const body = document.getElementById(`rule-body-${i}`);
         const icon = document.getElementById(`rule-expand-icon-${i}`);
@@ -1864,31 +1938,7 @@ ${articles}`;
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: { temperature: 0, maxOutputTokens: 2048 },
         };
-        let data;
-        if (activeModel) {
-          data = await tryModel(activeModel, key, body);
-        } else {
-          let lastErr = "";
-          for (const m of GEMINI_MODELS) {
-            try {
-              document.getElementById("progress-label").textContent =
-                `Testando ${m}…`;
-              data = await tryModel(m, key, body);
-              activeModel = m;
-              localStorage.setItem(LS_MOD, m);
-              document.getElementById("hdr-model").textContent = m;
-              document.getElementById("hdr-model").style.display = "inline";
-              document.getElementById("api-model-label").textContent = m;
-              break;
-            } catch (e) {
-              lastErr = e.message;
-            }
-          }
-          if (!data)
-            throw new Error(
-              `Nenhum modelo disponível. Último erro: ${lastErr}`,
-            );
-        }
+        const data = await callModel(key, body);
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
         const clean = text.replace(/```json|```/g, "").trim();
         let parsed = [];
@@ -1919,22 +1969,22 @@ ${articles}`;
           if (stopFlag) break;
           try {
             await fn();
+            const el = document.getElementById(`phase-status-${phaseId}`);
+            if (el && el.textContent.includes("⚠️")) el.textContent = "";
             return;
           } catch {
             attempts++;
             const waitMin = attempts <= 3 ? 2 : 5;
+            skipWait[phaseId] = false;
             for (let t = waitMin * 60; t > 0; t--) {
               if (stopFlag) break;
-              setPhaseStatus(
-                phaseId,
-                `⚠️ tentativa ${attempts} · ${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`,
-              );
+              if (skipWait[phaseId]) { skipWait[phaseId] = false; break; }
+              setPhaseRetry(phaseId, attempts, t);
               await sleep(1000);
             }
           }
         }
       }
-
       function setPhaseStatus(phaseId, text) {
         const el = document.getElementById(`phase-status-${phaseId}`);
         if (el) el.textContent = text;
@@ -1955,43 +2005,12 @@ ${articles}`;
         rows.style.display = "flex";
         let html = "";
         if (regexRules.length) {
-          setPhaseStatus("regex", "rodando…");
-          document.getElementById("progress-label").textContent = "⚡ Regex…";
-          allRows.forEach((row, i) => {
-            regexRules.forEach((r) => {
-              if ((allRows[i][r.id] || "").trim() !== "") return;
-              const match = applyRuleRegex(row, r);
-              if (match !== null) {
-                allRows[i][r.id] = match;
-                allRows[i][`${r.id}_source`] = "regex";
-              }
-            });
-          });
-          setPhaseStatus("regex", "✓ concluída");
-          setPhaseProgress("regex", allRows.length, allRows.length);
-          document.getElementById("btn-download").disabled = false;
-          updateStats();
-          renderTable();
-          setPhaseStatus("regex", "✓ concluída");
-          setPhaseProgress("regex", allRows.length, allRows.length);
-          document.getElementById("btn-download").disabled = false;
-          // Atualiza a barra global ao fim do regex (importante p/ regras só-regex)
-          {
-            const totalFields = activeRules.length * allRows.length;
-            let filled = 0;
-            activeRules.forEach((r) => {
-              allRows.forEach((row) => {
-                if ((row[r.id] || "").trim()) filled++;
-              });
-            });
-            const pct = totalFields > 0 ? Math.round((filled / totalFields) * 100) : 0;
-            document.getElementById("progress-fill").style.width = pct + "%";
-            document.getElementById("progress-pct").textContent = pct + "%";
-            document.getElementById("progress-label").textContent =
-              `Classificando… ${filled}/${totalFields} campos`;
-          }
-          updateStats();
-          renderTable();
+          const names = regexRules.map((r) => r.id).join(", ");
+          html += `<div class="phase-row">
+            <span class="phase-label">⚡ regex (${names})</span>
+            <div class="phase-bar"><div class="phase-fill phase-fill-regex" id="phase-fill-regex" style="width:0%"></div></div>
+            <span class="phase-status" id="phase-status-regex"></span>
+          </div>`;
         }
         aiRules.forEach((r) => {
           const safeId = r.id.replace(/[^a-zA-Z0-9_-]/g, "_");
@@ -2059,8 +2078,24 @@ ${articles}`;
               }
             });
           });
-          setPhaseStatus("regex", "✓ concluída");
-          setPhaseProgress("regex", allRows.length, allRows.length);
+         setPhaseStatus("regex", "✓ concluída");
+         setPhaseProgress("regex", allRows.length, allRows.length);
+         document.getElementById("btn-download").disabled = false;
+          {
+            const totalFields = activeRules.length * allRows.length;
+            let filled = 0;
+            activeRules.forEach((r) => {
+              allRows.forEach((row) => {
+                if ((row[r.id] || "").trim()) filled++;
+              });
+            });
+            const pct =
+              totalFields > 0 ? Math.round((filled / totalFields) * 100) : 0;
+            document.getElementById("progress-fill").style.width = pct + "%";
+            document.getElementById("progress-pct").textContent = pct + "%";
+            document.getElementById("progress-label").textContent =
+              `Classificando… ${filled}/${totalFields} campos`;
+          }
           updateStats();
           renderTable();
         }
@@ -2322,6 +2357,127 @@ ${articles}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+      }
+
+      // ====== Persistência de regras ======
+      function persistRules() {
+        try { localStorage.setItem(LS_RULES, JSON.stringify({ v: 1, rules: userRules })); } catch (e) {}
+      }
+      function loadPersistedRules() {
+        try {
+          const raw = localStorage.getItem(LS_RULES);
+          if (!raw) return;
+          const obj = JSON.parse(raw);
+          if (obj && obj.v === 1 && Array.isArray(obj.rules))
+            userRules = obj.rules.map((r) => makeRule(r));
+        } catch (e) {}
+      }
+      function setRuleMode(idx, mode) {
+        userRules[idx].mode = mode;
+        persistRules();
+      }
+      // ====== Biblioteca de regras reutilizáveis ======
+      function loadLibrary() {
+        try {
+          const raw = localStorage.getItem(LS_LIB);
+          if (!raw) return;
+          const obj = JSON.parse(raw);
+          if (obj && obj.v === 1 && Array.isArray(obj.rules)) ruleLibrary = obj.rules;
+        } catch (e) {}
+      }
+      function persistLibrary() {
+        try { localStorage.setItem(LS_LIB, JSON.stringify({ v: 1, rules: ruleLibrary })); } catch (e) {}
+      }
+      function saveRuleToLibrary(idx) {
+        const r = userRules[idx];
+        if (!r || !r.id || !r.id.trim()) { showToast("Dê um nome à regra antes de salvar."); return; }
+        const copy = makeRule({ id: r.id, mode: r.mode, inputCols: r.inputCols.slice(), method: r.method, regexText: r.regexText, prompt: r.prompt });
+        const ex = ruleLibrary.findIndex((x) => x.id === r.id);
+        if (ex >= 0) ruleLibrary[ex] = copy; else ruleLibrary.push(copy);
+        persistLibrary();
+        showToast(`Regra "${r.id}" salva na biblioteca.`);
+        if (presetsOpen) buildPresetsChips();
+      }
+      function addRuleFromLibrary(name) {
+        const src = ruleLibrary.find((x) => x.id === name);
+        if (!src) return;
+        if (userRules.some((r) => r.id === name)) { showToast(`Regra "${name}" já está na lista.`); return; }
+        const validCols = csvHeaders.length ? src.inputCols.filter((c) => csvHeaders.includes(c)) : src.inputCols.slice();
+        userRules.push(makeRule({ id: src.id, mode: src.mode, inputCols: validCols.length ? validCols : src.inputCols.slice(), method: src.method, regexText: src.regexText, prompt: src.prompt }));
+        persistRules();
+        ensureRuleColumns();
+        buildRulesUI();
+        if (allRows.length) { updateStats(); renderTable(); updateTableHeader(); }
+      }
+      function removeFromLibrary(name) {
+        ruleLibrary = ruleLibrary.filter((x) => x.id !== name);
+        persistLibrary();
+        if (presetsOpen) buildPresetsChips();
+      }
+      // ====== Seleção de modelo (auto x fixado) ======
+      function updateModelLabels(m) {
+        const lbl = document.getElementById("api-model-label");
+        if (lbl) lbl.textContent = pinnedModel ? `fixado: ${m}` : `auto: ${m}`;
+      }
+      function populateModelSelect() {
+        const sel = document.getElementById("model-select");
+        if (!sel) return;
+        sel.innerHTML = '<option value="auto">auto</option>' +
+          GEMINI_MODELS.map((m) => `<option value="${m}">${m}</option>`).join("");
+        sel.value = pinnedModel || "auto";
+      }
+      function onModelSelect() {
+        const v = document.getElementById("model-select").value;
+        if (v === "auto") {
+          pinnedModel = null;
+          localStorage.removeItem(LS_PINNED);
+          activeModel = null;
+          localStorage.removeItem(LS_MOD);
+          updateModelLabels("detectando…");
+        } else {
+          pinnedModel = v;
+          localStorage.setItem(LS_PINNED, v);
+          activeModel = v;
+          localStorage.setItem(LS_MOD, v);
+          updateModelLabels(v);
+        }
+      }
+      function initModel() {
+        let p = localStorage.getItem(LS_PINNED) || null;
+        if (p && !GEMINI_MODELS.includes(p)) { p = null; localStorage.removeItem(LS_PINNED); }
+        pinnedModel = p;
+        if (pinnedModel) activeModel = pinnedModel;
+        else { activeModel = null; localStorage.removeItem(LS_MOD); }
+        populateModelSelect();
+        updateModelLabels(pinnedModel || "detectando…");
+      }
+      async function callModel(key, body) {
+        if (pinnedModel) return await tryModel(pinnedModel, key, body);
+        const order = activeModel
+          ? [activeModel, ...GEMINI_MODELS.filter((m) => m !== activeModel)]
+          : GEMINI_MODELS.slice();
+        let lastErr = "";
+        for (const m of order) {
+          try {
+            document.getElementById("progress-label").textContent = `Testando ${m}…`;
+            const data = await tryModel(m, key, body);
+            if (activeModel !== m) {
+              activeModel = m;
+              localStorage.setItem(LS_MOD, m);
+              updateModelLabels(m);
+            }
+            return data;
+          } catch (e) { lastErr = e.message; }
+        }
+        throw new Error(`Nenhum modelo disponível. Último erro: ${lastErr}`);
+      }
+      // ====== Retry manual por coluna ======
+      function skipBackoffWait(phaseId) { skipWait[phaseId] = true; }
+      function setPhaseRetry(phaseId, attempts, t) {
+        const el = document.getElementById(`phase-status-${phaseId}`);
+        if (!el) return;
+        const mmss = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
+        el.innerHTML = `⚠️ tentativa ${attempts} · ${mmss} <button class="retry-btn" onclick="skipBackoffWait('${phaseId}')">retry</button>`;
       }
 
       // ── Toast ──────────────────────────────────────────────────────────────────
