@@ -1955,12 +1955,23 @@ ${articles}`;
         rows.style.display = "flex";
         let html = "";
         if (regexRules.length) {
-          const names = regexRules.map((r) => r.id).join(", ");
-          html += `<div class="phase-row">
-            <span class="phase-label">⚡ regex (${names})</span>
-            <div class="phase-bar"><div class="phase-fill phase-fill-regex" id="phase-fill-regex" style="width:0%"></div></div>
-            <span class="phase-status" id="phase-status-regex"></span>
-          </div>`;
+          setPhaseStatus("regex", "rodando…");
+          document.getElementById("progress-label").textContent = "⚡ Regex…";
+          allRows.forEach((row, i) => {
+            regexRules.forEach((r) => {
+              if ((allRows[i][r.id] || "").trim() !== "") return;
+              const match = applyRuleRegex(row, r);
+              if (match !== null) {
+                allRows[i][r.id] = match;
+                allRows[i][`${r.id}_source`] = "regex";
+              }
+            });
+          });
+          setPhaseStatus("regex", "✓ concluída");
+          setPhaseProgress("regex", allRows.length, allRows.length);
+          document.getElementById("btn-download").disabled = false;  // ← ADICIONAR
+          updateStats();
+          renderTable();
         }
         aiRules.forEach((r) => {
           const safeId = r.id.replace(/[^a-zA-Z0-9_-]/g, "_");
@@ -2112,6 +2123,7 @@ ${articles}`;
 
         document.getElementById("btn-pause").style.display = "none";
         document.getElementById("btn-start").style.display = "inline-block";
+        document.getElementById("btn-download").disabled = false;
         const allDone = activeRules.every((r) =>
           allRows.every((row) => (row[r.id] || "").trim()),
         );
