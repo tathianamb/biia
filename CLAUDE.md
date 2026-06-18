@@ -33,7 +33,7 @@ Everything lives in `index.html` as a single `<script>` block. The file has no m
 
 **Classification pipeline (`startClassification`):**
 - Phase 1 (regex): for each `regex` or `regex+ai` rule, `applyRuleRegex()` tests each row synchronously; matches written immediately
-- Phase 2 (AI): each `ai` or `regex+ai` rule spawns an independent async stream (`runAIRule`); rows empty after the regex phase are batched in groups of 5 (`BATCH = 5`) and sent to Gemini; 6-second pause between batches; `runWithBackoff()` wraps each batch with automatic retry (2 min wait for attempts 1–3, 5 min for 4+)
+- Phase 2 (AI): each `ai` or `regex+ai` rule spawns an independent async stream (`runAIRule`); rows empty after the regex phase are batched in groups of 5 (`BATCH = 5`) and sent to Gemini; 6-second pause between batches; `runWithBackoff()` wraps each batch with automatic retry (2 min wait for attempts 1–3, 5 min for 4+). During the wait, `setPhaseRetry()` shows a per-column countdown (`⚠️ tentativa N · mm:ss`) with a manual **retry** button; clicking it calls `skipBackoffWait(phaseId)` (sets `skipWait[phaseId] = true`), which breaks the countdown loop early and triggers the next attempt immediately. Classification can also be paused at any time via `pauseClassification()` (`stopFlag`)
 
 **Model selection (`callModel`):**
 - `pinnedModel`: user-selected model from the dropdown, stored in `localStorage` as `biia_pinned_model`
