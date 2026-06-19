@@ -1131,6 +1131,8 @@ const GEMINI_MODELS = [
           regexText: "",
           prompt: "",
           ...overrides,
+          // default multivalorado; só fica single-value com multi === false explícito
+          multi: overrides.multi !== false,
         };
       }
 
@@ -1331,8 +1333,12 @@ const GEMINI_MODELS = [
       ${
         showRegex
           ? `<div>
-        <div class="rule-field-label">Padrões regex — um por linha: <code style="color:var(--accent)">/padrão/flags → valor</code></div>
-        <textarea class="rule-textarea" id="rule-regex-${i}" rows="6" placeholder="/wind speed/i → velocidade do vento">${esc(r.regexText)}</textarea>
+        <div class="rule-field-label">Padrões regex — um por linha: <code style="color:var(--accent)">/padrão/flags > valor</code></div>
+        <textarea class="rule-textarea" id="rule-regex-${i}" rows="6" placeholder="/wind speed/i > velocidade do vento">${esc(r.regexText)}</textarea>
+        <label class="rule-field-label" style="display:flex;align-items:center;gap:6px;margin-top:6px;cursor:pointer">
+          <input type="checkbox" ${r.multi !== false ? "checked" : ""} onchange="setRuleMulti(${i}, this.checked)" />
+          Permitir múltiplos valores (separados por vírgula)
+        </label>
       </div>`
           : ""
       }
@@ -1514,14 +1520,10 @@ const GEMINI_MODELS = [
           .map((l) => l.trim())
           .filter((l) => l && !l.startsWith("#"))
           .map((l) => {
-            const arrow = l.lastIndexOf(" → ");
-            if (arrow === -1) return null;
-            const patStr = l.slice(0, arrow).trim();
-            const value = l.slice(arrow + 3).trim();
-            const m = patStr.match(/^\/(.+)\/([gimsuy]*)$/);
+            const m = l.match(/^\/(.+)\/([gimsuy]*)\s*>\s*(.+)$/);
             if (!m) return null;
             try {
-              return { regex: new RegExp(m[1], m[2] || "i"), value };
+              return { regex: new RegExp(m[1], m[2] || "i"), value: m[3].trim() };
             } catch {
               return null;
             }
@@ -1531,10 +1533,17 @@ const GEMINI_MODELS = [
 
       function applyRuleRegex(row, rule) {
         const text = rule.inputCols.map((col) => row[col] || "").join(" ");
-        for (const { regex, value } of parseRegexLines(rule.regexText)) {
-          if (regex.test(text)) return value;
+        if (rule.multi === false) {
+          for (const { regex, value } of parseRegexLines(rule.regexText)) {
+            if (regex.test(text)) return value;
+          }
+          return null;
         }
-        return null;
+        const matches = [];
+        for (const { regex, value } of parseRegexLines(rule.regexText)) {
+          if (regex.test(text) && !matches.includes(value)) matches.push(value);
+        }
+        return matches.length ? matches.join(", ") : null;
       }
 
       // ── Prompt builder ─────────────────────────────────────────────────────────
@@ -1994,6 +2003,10 @@ ${articles}`;
         userRules[idx].mode = mode;
         persistRules();
       }
+      function setRuleMulti(idx, val) {
+        userRules[idx].multi = val;
+        persistRules();
+      }
       // ====== Biblioteca de regras reutilizáveis ======
       function loadLibrary() {
         try {
@@ -2009,7 +2022,7 @@ ${articles}`;
       function saveRuleToLibrary(idx) {
         const r = userRules[idx];
         if (!r || !r.id || !r.id.trim()) { showToast("Dê um nome à regra antes de salvar."); return; }
-        const copy = makeRule({ id: r.id, mode: r.mode, inputCols: r.inputCols.slice(), method: r.method, regexText: r.regexText, prompt: r.prompt });
+        const copy = makeRule({ id: r.id, mode: r.mode, multi: r.multi, inputCols: r.inputCols.slice(), method: r.method, regexText: r.regexText, prompt: r.prompt });
         const ex = ruleLibrary.findIndex((x) => x.id === r.id);
         if (ex >= 0) ruleLibrary[ex] = copy; else ruleLibrary.push(copy);
         persistLibrary();
@@ -2021,7 +2034,7 @@ ${articles}`;
         if (!src) return;
         if (userRules.some((r) => r.id === name)) { showToast(`Regra "${name}" já está na lista.`); return; }
         const validCols = csvHeaders.length ? src.inputCols.filter((c) => csvHeaders.includes(c)) : src.inputCols.slice();
-        userRules.push(makeRule({ id: src.id, mode: src.mode, inputCols: validCols.length ? validCols : src.inputCols.slice(), method: src.method, regexText: src.regexText, prompt: src.prompt }));
+        userRules.push(makeRule({ id: src.id, mode: src.mode, multi: src.multi, inputCols: validCols.length ? validCols : src.inputCols.slice(), method: src.method, regexText: src.regexText, prompt: src.prompt }));
         persistRules();
         ensureRuleColumns();
         buildRulesUI();
