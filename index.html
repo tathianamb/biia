@@ -318,38 +318,6 @@
         margin-bottom: 12px;
       }
 
-      /* ── Prompt preview ── */
-      .prompt-preview {
-        display: none;
-      }
-      .prompt-preview.show {
-        display: block;
-      }
-      .prompt-box {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 14px;
-        font-size: 10px;
-        color: var(--muted);
-        line-height: 1.7;
-        max-height: 200px;
-        overflow-y: auto;
-        white-space: pre-wrap;
-        word-break: break-word;
-        margin-top: 8px;
-      }
-      .toggle-preview {
-        font-size: 10px;
-        color: var(--accent);
-        cursor: pointer;
-        background: none;
-        border: none;
-        font-family: "JetBrains Mono", monospace;
-        padding: 0;
-        display: inline;
-      }
-
       /* ── Rule cards ── */
       .rule-card {
         background: var(--card);
@@ -946,9 +914,6 @@
           >
             minhas regras ▾
           </button>
-          <button class="toggle-preview" onclick="togglePromptPreview()">
-            ▶ ver prompts
-          </button>
         </div>
         <div id="presets-panel" style="display: none; margin-top: 12px">
           <div
@@ -966,9 +931,6 @@
             id="presets-chips"
             style="display: flex; flex-wrap: wrap; gap: 6px"
           ></div>
-        </div>
-        <div class="prompt-preview" id="prompt-preview">
-          <div class="prompt-box" id="prompt-box"></div>
         </div>
       </div>
 
@@ -1080,7 +1042,6 @@ const GEMINI_MODELS = [
       let userRules = [];
       let csvHeaders = [];
       let presetsOpen = false,
-        promptPreviewOpen = false,
         pendingExpand = -1;
 
       // ── API Key ────────────────────────────────────────────────────────────────
@@ -1257,22 +1218,6 @@ const GEMINI_MODELS = [
         }
         document.getElementById("presets-chips").innerHTML = presetHtml + libHtml;
       }
-      function togglePromptPreview() {
-        promptPreviewOpen = !promptPreviewOpen;
-        document
-          .getElementById("prompt-preview")
-          .classList.toggle("show", promptPreviewOpen);
-        if (promptPreviewOpen) updatePromptPreview();
-      }
-
-      function updatePromptPreview() {
-        const active = userRules.filter((r) => r.active && r.prompt);
-        document.getElementById("prompt-box").textContent = active.length
-          ? active
-              .map((r) => `── ${r.id || "(sem nome)"} ──\n${r.prompt}`)
-              .join("\n\n")
-          : "Nenhuma regra com prompt definido.";
-      }
 
       function renderRuleCard(r, i) {
         const mbClass =
@@ -1397,7 +1342,6 @@ const GEMINI_MODELS = [
           }
         }
         if (presetsOpen) buildPresetsChips();
-        if (promptPreviewOpen) updatePromptPreview();
         persistRules();
       }
       function toggleRuleExpand(i) {
