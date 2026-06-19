@@ -518,25 +518,6 @@
         font-family: "JetBrains Mono", monospace;
         outline: none;
       }
-      .preset-chip {
-        font-size: 10px;
-        padding: 4px 12px;
-        border-radius: 99px;
-        border: 1px solid var(--border);
-        background: var(--surface);
-        color: var(--text);
-        cursor: pointer;
-        font-family: "JetBrains Mono", monospace;
-        transition: all 0.15s;
-      }
-      .preset-chip:hover:not(:disabled) {
-        border-color: var(--accent);
-        color: var(--accent);
-      }
-      .preset-chip:disabled {
-        opacity: 0.45;
-        cursor: default;
-      }
       .rule-body-inner {
         padding-top: 10px;
         display: flex;
@@ -909,13 +890,13 @@
           <button class="btn-sm" onclick="addBlankRule()">+ nova regra</button>
           <button
             class="btn-sm"
-            id="btn-presets"
-            onclick="togglePresetsPanel()"
+            id="btn-library"
+            onclick="toggleLibraryPanel()"
           >
             minhas regras ▾
           </button>
         </div>
-        <div id="presets-panel" style="display: none; margin-top: 12px">
+        <div id="library-panel" style="display: none; margin-top: 12px">
           <div
             style="
               font-size: 9px;
@@ -928,7 +909,7 @@
             minhas regras salvas
           </div>
           <div
-            id="presets-chips"
+            id="library-chips"
             style="display: flex; flex-wrap: wrap; gap: 6px"
           ></div>
         </div>
@@ -1021,11 +1002,6 @@ const GEMINI_MODELS = [
       ];
       const LS_PINNED = "biia_pinned_model";
       const LS_LIB = "biia_rulelib_v1";
-      
-      // ── Presets (suggestions) ──────────────────────────────────────────────────
-      // Sem presets embutidos: a ferramenta é genérica. addPreset/buildPresetsChips
-      // continuam funcionais sobre este array, pronto para receber presets no futuro.
-      const PRESETS = [];
 
       function badgeCss() {
         return "p-custom";
@@ -1041,7 +1017,7 @@ const GEMINI_MODELS = [
       let activeFilter = { col: null, val: null };      
       let userRules = [];
       let csvHeaders = [];
-      let presetsOpen = false,
+      let libraryOpen = false,
         pendingExpand = -1;
 
       // ── API Key ────────────────────────────────────────────────────────────────
@@ -1098,34 +1074,6 @@ const GEMINI_MODELS = [
       }
 
       // ── Rule management ────────────────────────────────────────────────────────
-      function addPreset(presetId) {
-        const p = PRESETS.find((p) => p.id === presetId);
-        if (!p) return;
-        if (userRules.some((r) => r.id === presetId)) {
-          showToast(`Regra "${presetId}" já adicionada.`);
-          return;
-        }
-        const validCols = csvHeaders.length
-          ? p.inputCols.filter((c) => csvHeaders.includes(c))
-          : p.inputCols;
-        userRules.push(
-          makeRule({
-            id: p.id,
-            inputCols: validCols.length ? validCols : p.inputCols,
-            method: p.method,
-            regexText: p.regexText,
-            prompt: p.prompt,
-          }),
-        );
-        ensureRuleColumns();
-        buildRulesUI();
-        if (allRows.length) {
-          updateStats();
-          renderTable();
-          updateTableHeader();
-        }
-      }
-
       function addBlankRule() {
         userRules.push(makeRule({ inputCols: csvHeaders.slice(0, 1) }));
         pendingExpand = userRules.length - 1;
@@ -1187,22 +1135,18 @@ const GEMINI_MODELS = [
       }
 
       // ── Rules UI ───────────────────────────────────────────────────────────────
-      function togglePresetsPanel() {
-        presetsOpen = !presetsOpen;
-        document.getElementById("presets-panel").style.display = presetsOpen
+      function toggleLibraryPanel() {
+        libraryOpen = !libraryOpen;
+        document.getElementById("library-panel").style.display = libraryOpen
           ? "block"
           : "none";
-        document.getElementById("btn-presets").textContent = presetsOpen
+        document.getElementById("btn-library").textContent = libraryOpen
           ? "minhas regras ▴"
           : "minhas regras ▾";
-        if (presetsOpen) buildPresetsChips();
+        if (libraryOpen) buildLibraryChips();
       }
-      function buildPresetsChips() {
+      function buildLibraryChips() {
         const existingIds = new Set(userRules.map((r) => r.id));
-        const presetHtml = PRESETS.map(
-          (p) =>
-            `<button class="preset-chip" ${existingIds.has(p.id) ? "disabled" : ""} onclick="addPreset('${p.id}')">${p.id}</button>`,
-        ).join("");
         let libHtml = "";
         if (ruleLibrary.length) {
           libHtml = ruleLibrary
@@ -1212,11 +1156,11 @@ const GEMINI_MODELS = [
               return `<span class="lib-chip"><span style="${dis ? "opacity:.45" : "cursor:pointer"}" onclick="${dis ? "" : `addRuleFromLibrary('${nm}')`}">${esc(r.id)}</span><span class="lib-x" onclick="removeFromLibrary('${nm}')">×</span></span>`;
             })
             .join("");
-        } else if (!presetHtml) {
+        } else {
           libHtml =
             '<span style="font-size:10px;color:var(--muted)">nenhuma regra salva ainda</span>';
         }
-        document.getElementById("presets-chips").innerHTML = presetHtml + libHtml;
+        document.getElementById("library-chips").innerHTML = libHtml;
       }
 
       function renderRuleCard(r, i) {
@@ -1341,7 +1285,7 @@ const GEMINI_MODELS = [
             pendingExpand = -1;
           }
         }
-        if (presetsOpen) buildPresetsChips();
+        if (libraryOpen) buildLibraryChips();
         persistRules();
       }
       function toggleRuleExpand(i) {
@@ -1964,7 +1908,7 @@ ${articles}`;
         if (ex >= 0) ruleLibrary[ex] = copy; else ruleLibrary.push(copy);
         persistLibrary();
         showToast(`Regra "${r.id}" salva na biblioteca.`);
-        if (presetsOpen) buildPresetsChips();
+        if (libraryOpen) buildLibraryChips();
       }
       function addRuleFromLibrary(name) {
         const src = ruleLibrary.find((x) => x.id === name);
@@ -1980,7 +1924,7 @@ ${articles}`;
       function removeFromLibrary(name) {
         ruleLibrary = ruleLibrary.filter((x) => x.id !== name);
         persistLibrary();
-        if (presetsOpen) buildPresetsChips();
+        if (libraryOpen) buildLibraryChips();
       }
       // ====== Seleção de modelo (auto x fixado) ======
       function updateModelLabels(m) {
