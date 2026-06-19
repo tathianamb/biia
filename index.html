@@ -1058,7 +1058,6 @@ const GEMINI_MODELS = [
         "gemma-4-26b-a4b-it",
       ];
       const LS_PINNED = "biia_pinned_model";
-      const LS_RULES = "biia_rules_v1";
       const LS_LIB = "biia_rulelib_v1";
       
       // ── Presets (suggestions) ──────────────────────────────────────────────────
@@ -1117,7 +1116,8 @@ const GEMINI_MODELS = [
       });
       loadKey();
       loadLibrary();
-      loadPersistedRules();
+      // Limpa resíduo da antiga chave de regras ativas (descontinuada).
+      try { localStorage.removeItem("biia_rules_v1"); } catch (e) {}
       buildRulesUI();
 
       // ── Rule factory ───────────────────────────────────────────────────────────
@@ -1987,18 +1987,11 @@ ${articles}`;
       }
 
       // ====== Persistência de regras ======
-      function persistRules() {
-        try { localStorage.setItem(LS_RULES, JSON.stringify({ v: 1, rules: userRules })); } catch (e) {}
-      }
-      function loadPersistedRules() {
-        try {
-          const raw = localStorage.getItem(LS_RULES);
-          if (!raw) return;
-          const obj = JSON.parse(raw);
-          if (obj && obj.v === 1 && Array.isArray(obj.rules))
-            userRules = obj.rules.map((r) => makeRule(r));
-        } catch (e) {}
-      }
+      // A lista de regras ativas (userRules) NÃO é mais persistida automaticamente:
+      // só a biblioteca (biia_rulelib_v1) sobrevive ao reload. persistRules() é
+      // mantida como no-op para que as chamadas espalhadas pelos handlers continuem
+      // válidas sem efeito colateral.
+      function persistRules() {}
       function setRuleMode(idx, mode) {
         userRules[idx].mode = mode;
         persistRules();
