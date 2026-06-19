@@ -1304,7 +1304,7 @@ const GEMINI_MODELS = [
         const list = document.getElementById("rules-list");
         if (!userRules.length) {
           list.innerHTML =
-            '<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px 0">Nenhuma regra definida. Use "+ nova regra" ou "minhas regras".</div>';
+            '<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px 0">Nenhuma regra definida. Use "+ nova regra" ou "minhas regras ▾".</div>';
         } else {
           list.innerHTML = userRules
             .map((r, i) => renderRuleCard(r, i))
